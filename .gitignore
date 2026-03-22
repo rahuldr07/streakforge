@@ -1,6 +1,5 @@
-streakforge
+/streakforge
 *.test
 coverage.out
 .streakforge.json
 dist/
-
