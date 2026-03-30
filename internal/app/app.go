@@ -34,6 +34,8 @@ func RunWithConfig(args []string, cfg Config) error {
 	switch args[0] {
 	case "add":
 		return runAdd(args[1:], cfg)
+	case "list":
+		return runList(cfg)
 	case "help", "--help", "-h":
 		printHelp(cfg.Stdout)
 		return nil
@@ -48,6 +50,23 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  streakforge help")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
+	fmt.Fprintln(w, "  streakforge list")
+}
+
+func runList(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	habits := habit.Active(store)
+	if len(habits) == 0 {
+		fmt.Fprintln(cfg.Stdout, "no active habits")
+		return nil
+	}
+	for _, h := range habits {
+		fmt.Fprintf(cfg.Stdout, "%s  %s\n", h.ID, h.Name)
+	}
+	return nil
 }
 
 var ErrUsage = errors.New("invalid command usage")
