@@ -36,6 +36,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runAdd(args[1:], cfg)
 	case "list":
 		return runList(cfg)
+	case "done":
+		return runDone(args[1:], cfg)
 	case "help", "--help", "-h":
 		printHelp(cfg.Stdout)
 		return nil
@@ -51,6 +53,27 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge help")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
 	fmt.Fprintln(w, "  streakforge list")
+	fmt.Fprintln(w, "  streakforge done <habit-id>")
+}
+
+func runDone(args []string, cfg Config) error {
+	if len(args) != 1 {
+		return fmt.Errorf("%w: done requires a habit id", ErrUsage)
+	}
+	path := habit.DefaultPath(cfg.Home)
+	store, err := habit.Load(path)
+	if err != nil {
+		return err
+	}
+	store, completed, err := habit.Complete(store, args[0], time.Now())
+	if err != nil {
+		return err
+	}
+	if err := habit.Save(path, store); err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "completed %q for today\n", completed.Name)
+	return nil
 }
 
 func runList(cfg Config) error {
