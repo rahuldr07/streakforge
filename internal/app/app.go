@@ -40,6 +40,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runDone(args[1:], cfg)
 	case "streaks":
 		return runStreaks(cfg)
+	case "stats":
+		return runStats(cfg)
 	case "help", "--help", "-h":
 		printHelp(cfg.Stdout)
 		return nil
@@ -57,6 +59,19 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge list")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge streaks")
+	fmt.Fprintln(w, "  streakforge stats")
+}
+
+func runStats(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	summary := habit.Summarize(store)
+	fmt.Fprintf(cfg.Stdout, "active habits: %d\n", summary.ActiveHabits)
+	fmt.Fprintf(cfg.Stdout, "archived habits: %d\n", summary.ArchivedHabits)
+	fmt.Fprintf(cfg.Stdout, "total completions: %d\n", summary.TotalCompletions)
+	return nil
 }
 
 func runStreaks(cfg Config) error {
