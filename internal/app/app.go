@@ -44,6 +44,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runStats(cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
+	case "export":
+		return runExport(cfg)
 	case "help", "--help", "-h":
 		printHelp(cfg.Stdout)
 		return nil
@@ -63,6 +65,15 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
+	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runExport(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	return habit.WriteCSV(cfg.Stdout, store)
 }
 
 func runArchive(args []string, cfg Config) error {
