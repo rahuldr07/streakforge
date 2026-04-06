@@ -42,6 +42,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runStreaks(cfg)
 	case "stats":
 		return runStats(cfg)
+	case "archive":
+		return runArchive(args[1:], cfg)
 	case "help", "--help", "-h":
 		printHelp(cfg.Stdout)
 		return nil
@@ -60,6 +62,27 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
+	fmt.Fprintln(w, "  streakforge archive <habit-id>")
+}
+
+func runArchive(args []string, cfg Config) error {
+	if len(args) != 1 {
+		return fmt.Errorf("%w: archive requires a habit id", ErrUsage)
+	}
+	path := habit.DefaultPath(cfg.Home)
+	store, err := habit.Load(path)
+	if err != nil {
+		return err
+	}
+	store, archived, err := habit.Archive(store, args[0])
+	if err != nil {
+		return err
+	}
+	if err := habit.Save(path, store); err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "archived %q\n", archived.Name)
+	return nil
 }
 
 func runStats(cfg Config) error {
