@@ -17,3 +17,10 @@ func TestHelpCommand(t *testing.T) {
 	}
 }
 
+func TestUnknownCommand(t *testing.T) {
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"nope"}, Config{Stdout: &out, Home: t.TempDir()})
+	if err == nil {
+		t.Fatal("expected unknown command error")
+	}
+}
