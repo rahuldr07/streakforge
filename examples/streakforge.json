@@ -1,0 +1,13 @@
+{
+  "habits": [
+    {
+      "id": "demo01",
+      "name": "Read",
+      "description": "Read ten pages",
+      "created_at": "2026-05-18T00:00:00Z",
+      "archived": false,
+      "completions": ["2026-05-17", "2026-05-18"]
+    }
+  ]
+}
+
