@@ -11,4 +11,3 @@ func Archive(store Store, id string) (Store, Habit, error) {
 	}
 	return store, Habit{}, ErrNotFound
 }
-

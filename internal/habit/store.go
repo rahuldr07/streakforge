@@ -36,4 +36,3 @@ func Save(path string, store Store) error {
 	}
 	return os.WriteFile(path, append(data, '\n'), 0o600)
 }
-

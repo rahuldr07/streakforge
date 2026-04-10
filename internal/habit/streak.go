@@ -18,4 +18,3 @@ func CurrentStreak(h Habit, today time.Time) int {
 		cursor = cursor.AddDate(0, 0, -1)
 	}
 }
-

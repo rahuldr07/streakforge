@@ -9,4 +9,3 @@ func Active(store Store) []Habit {
 	}
 	return habits
 }
-

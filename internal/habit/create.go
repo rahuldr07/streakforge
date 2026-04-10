@@ -24,4 +24,3 @@ func Add(store Store, name string, description string, now time.Time) (Store, Ha
 	store.Habits = append(store.Habits, h)
 	return store, h, nil
 }
-

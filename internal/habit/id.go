@@ -12,4 +12,3 @@ func NewID() (string, error) {
 	}
 	return hex.EncodeToString(b[:]), nil
 }
-

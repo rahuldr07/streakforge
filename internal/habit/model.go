@@ -14,4 +14,3 @@ type Habit struct {
 type Store struct {
 	Habits []Habit `json:"habits"`
 }
-

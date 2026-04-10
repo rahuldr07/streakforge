@@ -15,4 +15,3 @@ func TestWriteCSV(t *testing.T) {
 		t.Fatalf("unexpected csv: %s", out.String())
 	}
 }
-

@@ -12,4 +12,3 @@ func TestCurrentStreak(t *testing.T) {
 		t.Fatalf("streak = %d", got)
 	}
 }
-

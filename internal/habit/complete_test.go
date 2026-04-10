@@ -21,4 +21,3 @@ func TestCompleteHabitOncePerDay(t *testing.T) {
 		t.Fatalf("completions = %d", got)
 	}
 }
-

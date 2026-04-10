@@ -18,4 +18,3 @@ func TestAddHabit(t *testing.T) {
 		t.Fatalf("habits = %d", len(store.Habits))
 	}
 }
-

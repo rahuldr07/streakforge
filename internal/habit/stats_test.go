@@ -15,4 +15,3 @@ func TestSummarize(t *testing.T) {
 		t.Fatalf("total completions = %d", summary.TotalCompletions)
 	}
 }
-

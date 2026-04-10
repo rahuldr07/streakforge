@@ -24,4 +24,3 @@ func WriteCSV(w io.Writer, store Store) error {
 	writer.Flush()
 	return writer.Error()
 }
-

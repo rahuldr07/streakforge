@@ -23,4 +23,3 @@ func Summarize(store Store) Summary {
 	}
 	return summary
 }
-
