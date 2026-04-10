@@ -29,3 +29,9 @@ go run ./cmd/streakforge streaks
 make test
 make build
 ```
+
+## Docs
+
+- [Commands](docs/commands.md)
+- [Storage](docs/storage.md)
+- [Example data](examples/streakforge.json)
