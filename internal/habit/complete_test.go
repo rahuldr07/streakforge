@@ -21,3 +21,17 @@ func TestCompleteHabitOncePerDay(t *testing.T) {
 		t.Fatalf("completions = %d", got)
 	}
 }
+
+func TestCompleteArchivedHabitReturnsError(t *testing.T) {
+	day := time.Date(2026, 5, 18, 9, 0, 0, 0, time.UTC)
+	store := Store{Habits: []Habit{{ID: "h1", Name: "Run", Archived: true}}}
+
+	updated, _, err := Complete(store, "h1", day)
+
+	if err != ErrArchived {
+		t.Fatalf("err = %v, want %v", err, ErrArchived)
+	}
+	if got := len(updated.Habits[0].Completions); got != 0 {
+		t.Fatalf("completions = %d", got)
+	}
+}

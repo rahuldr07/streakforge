@@ -8,6 +8,9 @@ func Complete(store Store, id string, day time.Time) (Store, Habit, error) {
 		if h.ID != id {
 			continue
 		}
+		if h.Archived {
+			return store, Habit{}, ErrArchived
+		}
 		if !contains(h.Completions, key) {
 			h.Completions = append(h.Completions, key)
 		}
