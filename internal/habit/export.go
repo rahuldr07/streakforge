@@ -4,17 +4,20 @@ import (
 	"encoding/csv"
 	"io"
 	"strconv"
+	"time"
 )
 
 func WriteCSV(w io.Writer, store Store) error {
 	writer := csv.NewWriter(w)
-	if err := writer.Write([]string{"id", "name", "archived", "completions"}); err != nil {
+	if err := writer.Write([]string{"id", "name", "description", "created_at", "archived", "completions"}); err != nil {
 		return err
 	}
 	for _, h := range store.Habits {
 		if err := writer.Write([]string{
 			h.ID,
 			h.Name,
+			h.Description,
+			h.CreatedAt.Format(time.RFC3339),
 			strconv.FormatBool(h.Archived),
 			strconv.Itoa(len(h.Completions)),
 		}); err != nil {

@@ -11,5 +11,5 @@
 
 - `streakforge streaks`
 - `streakforge stats` prints active and archived habit counts, total completions, and the largest completion count on a single habit.
-- `streakforge export`
+- `streakforge export` writes CSV with habit IDs, names, descriptions, creation timestamps, archive status, and completion counts.
 
