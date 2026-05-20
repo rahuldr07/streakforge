@@ -105,6 +105,7 @@ func runStats(cfg Config) error {
 	fmt.Fprintf(cfg.Stdout, "active habits: %d\n", summary.ActiveHabits)
 	fmt.Fprintf(cfg.Stdout, "archived habits: %d\n", summary.ArchivedHabits)
 	fmt.Fprintf(cfg.Stdout, "total completions: %d\n", summary.TotalCompletions)
+	fmt.Fprintf(cfg.Stdout, "longest completions: %d\n", summary.LongestCompletion)
 	return nil
 }
 

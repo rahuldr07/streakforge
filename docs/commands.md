@@ -10,6 +10,6 @@
 ## Reporting
 
 - `streakforge streaks`
-- `streakforge stats`
+- `streakforge stats` prints active and archived habit counts, total completions, and the largest completion count on a single habit.
 - `streakforge export`
 

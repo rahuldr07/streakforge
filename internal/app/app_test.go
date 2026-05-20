@@ -2,6 +2,8 @@ package app
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -22,5 +24,27 @@ func TestUnknownCommand(t *testing.T) {
 	err := RunWithConfig([]string{"nope"}, Config{Stdout: &out, Home: t.TempDir()})
 	if err == nil {
 		t.Fatal("expected unknown command error")
+	}
+}
+
+func TestStatsPrintsLongestCompletionCount(t *testing.T) {
+	home := t.TempDir()
+	data := `{
+  "habits": [
+    {"id": "a", "name": "Read", "completions": ["2026-05-17"]},
+    {"id": "b", "name": "Run", "completions": ["2026-05-16", "2026-05-17"]}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"stats"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "longest completions: 2") {
+		t.Fatalf("stats output missing longest completions: %s", out.String())
 	}
 }
