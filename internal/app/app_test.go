@@ -27,6 +27,20 @@ func TestUnknownCommand(t *testing.T) {
 	}
 }
 
+func TestDefaultConfigUsesUserHomeDirectory(t *testing.T) {
+	cfg := DefaultConfig(&bytes.Buffer{}, &bytes.Buffer{})
+
+	if cfg.Home == "" {
+		t.Fatal("Home is empty")
+	}
+	if cfg.Stdout == nil {
+		t.Fatal("Stdout is nil")
+	}
+	if cfg.Stderr == nil {
+		t.Fatal("Stderr is nil")
+	}
+}
+
 func TestStatsPrintsLongestCompletionCount(t *testing.T) {
 	home := t.TempDir()
 	data := `{

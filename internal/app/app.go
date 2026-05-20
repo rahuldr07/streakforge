@@ -18,11 +18,19 @@ type Config struct {
 }
 
 func Run(args []string) error {
-	return RunWithConfig(args, Config{
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-		Home:   os.Getenv("HOME"),
-	})
+	return RunWithConfig(args, DefaultConfig(os.Stdout, os.Stderr))
+}
+
+func DefaultConfig(stdout io.Writer, stderr io.Writer) Config {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = os.Getenv("HOME")
+	}
+	return Config{
+		Stdout: stdout,
+		Stderr: stderr,
+		Home:   home,
+	}
 }
 
 func RunWithConfig(args []string, cfg Config) error {
