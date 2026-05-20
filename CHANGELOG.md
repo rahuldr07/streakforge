@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Reject completions for archived habits.
+- Show the longest per-habit completion count in `stats`.
+- Create store directories automatically and replace store files through a temporary file.
+- Include descriptions and creation timestamps in CSV exports.
+
 ## 0.1.0
 
 - Added habit creation, listing, completion, and archiving.
