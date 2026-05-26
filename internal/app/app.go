@@ -56,6 +56,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runArchive(args[1:], cfg)
 	case "rename":
 		return runRename(args[1:], cfg)
+	case "backup":
+		return runBackup(cfg)
 	case "export":
 		return runExport(cfg)
 	case "help", "--help", "-h":
@@ -79,7 +81,17 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge pulse")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
+	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runBackup(cfg Config) error {
+	backupPath, err := habit.Backup(habit.DefaultPath(cfg.Home), time.Now())
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "backup written to %s\n", backupPath)
+	return nil
 }
 
 func runRename(args []string, cfg Config) error {
