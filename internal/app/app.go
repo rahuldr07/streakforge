@@ -54,6 +54,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runPulse(cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
+	case "rename":
+		return runRename(args[1:], cfg)
 	case "export":
 		return runExport(cfg)
 	case "help", "--help", "-h":
@@ -76,7 +78,32 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge stats")
 	fmt.Fprintln(w, "  streakforge pulse")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
+	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runRename(args []string, cfg Config) error {
+	if len(args) < 2 {
+		return fmt.Errorf("%w: rename requires a habit id and name", ErrUsage)
+	}
+	path := habit.DefaultPath(cfg.Home)
+	store, err := habit.Load(path)
+	if err != nil {
+		return err
+	}
+	var description string
+	if len(args) > 2 {
+		description = strings.Join(args[2:], " ")
+	}
+	store, renamed, err := habit.Rename(store, args[0], args[1], description)
+	if err != nil {
+		return err
+	}
+	if err := habit.Save(path, store); err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "renamed %s %q\n", renamed.ID, renamed.Name)
+	return nil
 }
 
 func runPulse(cfg Config) error {
