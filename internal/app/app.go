@@ -50,6 +50,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runStreaks(cfg)
 	case "stats":
 		return runStats(cfg)
+	case "pulse":
+		return runPulse(cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
 	case "export":
@@ -72,8 +74,33 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
+	fmt.Fprintln(w, "  streakforge pulse")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runPulse(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	for _, day := range habit.WeeklyPulse(store, time.Now()) {
+		fmt.Fprintf(cfg.Stdout, "%s  %s %d\n", day.Date, pulseBar(day.Completion), day.Completion)
+	}
+	return nil
+}
+
+func pulseBar(count int) string {
+	if count <= 0 {
+		return "□"
+	}
+	if count == 1 {
+		return "■"
+	}
+	if count == 2 {
+		return "■■"
+	}
+	return "■■■"
 }
 
 func runExport(cfg Config) error {
