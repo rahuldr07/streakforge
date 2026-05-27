@@ -14,4 +14,7 @@ func TestSummarize(t *testing.T) {
 	if summary.TotalCompletions != 3 {
 		t.Fatalf("total completions = %d", summary.TotalCompletions)
 	}
+	if summary.CompletionRate != 1.5 {
+		t.Fatalf("completion rate = %f", summary.CompletionRate)
+	}
 }

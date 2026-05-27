@@ -5,6 +5,7 @@ type Summary struct {
 	ArchivedHabits    int
 	TotalCompletions  int
 	LongestCompletion int
+	CompletionRate    float64
 }
 
 func Summarize(store Store) Summary {
@@ -20,6 +21,9 @@ func Summarize(store Store) Summary {
 		if count > summary.LongestCompletion {
 			summary.LongestCompletion = count
 		}
+	}
+	if len(store.Habits) > 0 {
+		summary.CompletionRate = float64(summary.TotalCompletions) / float64(len(store.Habits))
 	}
 	return summary
 }
