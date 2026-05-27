@@ -44,6 +44,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runAdd(args[1:], cfg)
 	case "list":
 		return runList(cfg)
+	case "today":
+		return runToday(cfg)
 	case "done":
 		return runDone(args[1:], cfg)
 	case "streaks":
@@ -75,6 +77,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge help")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
 	fmt.Fprintln(w, "  streakforge list")
+	fmt.Fprintln(w, "  streakforge today")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
@@ -83,6 +86,26 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runToday(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	statuses := habit.Today(store, time.Now())
+	if len(statuses) == 0 {
+		fmt.Fprintln(cfg.Stdout, "no active habits")
+		return nil
+	}
+	for _, status := range statuses {
+		mark := "todo"
+		if status.Completed {
+			mark = "done"
+		}
+		fmt.Fprintf(cfg.Stdout, "%s  %s  %s\n", mark, status.ID, status.Name)
+	}
+	return nil
 }
 
 func runBackup(cfg Config) error {
