@@ -60,6 +60,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runRename(args[1:], cfg)
 	case "backup":
 		return runBackup(cfg)
+	case "restore":
+		return runRestore(args[1:], cfg)
 	case "export":
 		return runExport(cfg)
 	case "help", "--help", "-h":
@@ -85,7 +87,24 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
+	fmt.Fprintln(w, "  streakforge restore <backup-path>")
 	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runRestore(args []string, cfg Config) error {
+	if len(args) != 1 {
+		return fmt.Errorf("%w: restore requires a backup path", ErrUsage)
+	}
+	safetyPath, err := habit.Restore(habit.DefaultPath(cfg.Home), args[0], time.Now())
+	if err != nil {
+		return err
+	}
+	if safetyPath == "" {
+		fmt.Fprintln(cfg.Stdout, "restored store")
+		return nil
+	}
+	fmt.Fprintf(cfg.Stdout, "restored store; previous data backed up to %s\n", safetyPath)
+	return nil
 }
 
 func runToday(cfg Config) error {
