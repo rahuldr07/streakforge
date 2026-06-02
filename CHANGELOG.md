@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `next` to prioritize today's unfinished habits by streaks at risk.
 - Reject completions for archived habits.
 - Show the longest per-habit completion count in `stats`.
 - Create store directories automatically and replace store files through a temporary file.

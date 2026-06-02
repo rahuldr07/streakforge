@@ -46,6 +46,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runList(cfg)
 	case "today":
 		return runToday(cfg)
+	case "next":
+		return runNext(cfg)
 	case "done":
 		return runDone(args[1:], cfg)
 	case "streaks":
@@ -80,6 +82,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
 	fmt.Fprintln(w, "  streakforge list")
 	fmt.Fprintln(w, "  streakforge today")
+	fmt.Fprintln(w, "  streakforge next")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
@@ -89,6 +92,29 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge restore <backup-path>")
 	fmt.Fprintln(w, "  streakforge export")
+}
+
+func runNext(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	actions := habit.Next(store, time.Now())
+	if len(actions) == 0 {
+		fmt.Fprintln(cfg.Stdout, "no pending habits")
+		return nil
+	}
+	for _, action := range actions {
+		fmt.Fprintf(cfg.Stdout, "%s  %s  %s\n", action.ID, streakText(action.CurrentStreak), action.Name)
+	}
+	return nil
+}
+
+func streakText(days int) string {
+	if days == 1 {
+		return "1 day"
+	}
+	return fmt.Sprintf("%d days", days)
 }
 
 func runRestore(args []string, cfg Config) error {
