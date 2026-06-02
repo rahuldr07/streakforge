@@ -7,6 +7,7 @@ It is designed to be simple, portable, and easy to inspect.
 
 - Add and list active habits
 - Review today's done/todo status
+- See the next unfinished habits to protect streaks at risk
 - Mark habits complete for today
 - Track current streaks
 - Archive habits without deleting history
@@ -17,14 +18,20 @@ It is designed to be simple, portable, and easy to inspect.
 
 ## Quick Start
 
+Requires Go 1.22 or newer.
+
 ```bash
 go run ./cmd/streakforge help
 go run ./cmd/streakforge add read "Read ten pages"
 go run ./cmd/streakforge list
 go run ./cmd/streakforge today
+go run ./cmd/streakforge next
 go run ./cmd/streakforge done <habit-id>
 go run ./cmd/streakforge streaks
 ```
+
+`next` prints unfinished active habits for today, sorted by the current streak you can preserve by
+completing them.
 
 ## Development
 
@@ -32,6 +39,8 @@ go run ./cmd/streakforge streaks
 make test
 make build
 ```
+
+`make build` writes a local `streakforge` binary in the repository root.
 
 ## Docs
 

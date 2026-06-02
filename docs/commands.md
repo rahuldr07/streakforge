@@ -5,6 +5,7 @@
 - `streakforge add <name> [description]`
 - `streakforge list`
 - `streakforge today`
+- `streakforge next` prints unfinished active habits for today, prioritized by the streak each habit can preserve.
 - `streakforge done <habit-id>`
 - `streakforge archive <habit-id>`
 - `streakforge rename <habit-id> <name> [description]`
