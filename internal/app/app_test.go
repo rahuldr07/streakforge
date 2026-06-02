@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestHelpCommand(t *testing.T) {
@@ -60,5 +61,40 @@ func TestStatsPrintsLongestCompletionCount(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "longest completions: 2") {
 		t.Fatalf("stats output missing longest completions: %s", out.String())
+	}
+}
+
+func TestNextPrintsPendingHabitsByStreakPriority(t *testing.T) {
+	home := t.TempDir()
+	now := time.Now()
+	today := now.Format(time.DateOnly)
+	yesterday := now.AddDate(0, 0, -1).Format(time.DateOnly)
+	twoDaysAgo := now.AddDate(0, 0, -2).Format(time.DateOnly)
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read", "completions": ["` + twoDaysAgo + `", "` + yesterday + `"]},
+    {"id": "walk", "name": "Walk", "completions": ["` + yesterday + `"]},
+    {"id": "water", "name": "Water", "completions": ["` + today + `"]},
+    {"id": "old", "name": "Old", "archived": true}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"next"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(out.String()), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("lines = %d, want 2; output=%q", len(lines), out.String())
+	}
+	if !strings.Contains(lines[0], "read  2 days  Read") {
+		t.Fatalf("first next line = %q", lines[0])
+	}
+	if !strings.Contains(lines[1], "walk  1 day  Walk") {
+		t.Fatalf("second next line = %q", lines[1])
 	}
 }
