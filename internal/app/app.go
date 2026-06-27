@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -50,6 +51,14 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runNext(cfg)
 	case "done":
 		return runDone(args[1:], cfg)
+	case "log":
+		return runLog(args[1:], cfg)
+	case "undo":
+		return runUndo(args[1:], cfg)
+	case "show":
+		return runShow(args[1:], cfg)
+	case "search":
+		return runSearch(args[1:], cfg)
 	case "streaks":
 		return runStreaks(cfg)
 	case "stats":
@@ -84,6 +93,10 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge today")
 	fmt.Fprintln(w, "  streakforge next")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
+	fmt.Fprintln(w, "  streakforge log <habit-id> <yyyy-mm-dd>")
+	fmt.Fprintln(w, "  streakforge undo <habit-id>")
+	fmt.Fprintln(w, "  streakforge show <habit-id>")
+	fmt.Fprintln(w, "  streakforge search <query>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
 	fmt.Fprintln(w, "  streakforge pulse")
@@ -243,11 +256,12 @@ func runStats(cfg Config) error {
 	if err != nil {
 		return err
 	}
-	summary := habit.Summarize(store)
+	summary := habit.SummarizeAt(store, time.Now())
 	fmt.Fprintf(cfg.Stdout, "active habits: %d\n", summary.ActiveHabits)
 	fmt.Fprintf(cfg.Stdout, "archived habits: %d\n", summary.ArchivedHabits)
 	fmt.Fprintf(cfg.Stdout, "total completions: %d\n", summary.TotalCompletions)
 	fmt.Fprintf(cfg.Stdout, "longest completions: %d\n", summary.LongestCompletion)
+	fmt.Fprintf(cfg.Stdout, "best current streak: %d\n", summary.BestCurrentStreak)
 	fmt.Fprintf(cfg.Stdout, "completion rate: %.2f per habit\n", summary.CompletionRate)
 	return nil
 }
@@ -267,19 +281,132 @@ func runDone(args []string, cfg Config) error {
 	if len(args) != 1 {
 		return fmt.Errorf("%w: done requires a habit id", ErrUsage)
 	}
+	return completeForDay(args[0], time.Now(), cfg)
+}
+
+func runLog(args []string, cfg Config) error {
+	if len(args) != 2 {
+		return fmt.Errorf("%w: log requires a habit id and date", ErrUsage)
+	}
+	day, err := time.Parse(time.DateOnly, args[1])
+	if err != nil {
+		return fmt.Errorf("%w: date must use yyyy-mm-dd", ErrUsage)
+	}
+	return completeForDay(args[0], day, cfg)
+}
+
+func completeForDay(id string, day time.Time, cfg Config) error {
 	path := habit.DefaultPath(cfg.Home)
 	store, err := habit.Load(path)
 	if err != nil {
 		return err
 	}
-	store, completed, err := habit.Complete(store, args[0], time.Now())
+	store, completed, err := habit.Complete(store, id, day)
 	if err != nil {
 		return err
 	}
 	if err := habit.Save(path, store); err != nil {
 		return err
 	}
-	fmt.Fprintf(cfg.Stdout, "completed %q for today\n", completed.Name)
+	if day.Format(time.DateOnly) == time.Now().Format(time.DateOnly) {
+		fmt.Fprintf(cfg.Stdout, "completed %q for today\n", completed.Name)
+		return nil
+	}
+	fmt.Fprintf(cfg.Stdout, "completed %q for %s\n", completed.Name, day.Format(time.DateOnly))
+	return nil
+}
+
+func runUndo(args []string, cfg Config) error {
+	if len(args) != 1 {
+		return fmt.Errorf("%w: undo requires a habit id", ErrUsage)
+	}
+	path := habit.DefaultPath(cfg.Home)
+	store, err := habit.Load(path)
+	if err != nil {
+		return err
+	}
+	store, h, removed, err := habit.Uncomplete(store, args[0], time.Now())
+	if err != nil {
+		return err
+	}
+	if !removed {
+		fmt.Fprintf(cfg.Stdout, "%q was not completed today\n", h.Name)
+		return nil
+	}
+	if err := habit.Save(path, store); err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "removed today's completion for %q\n", h.Name)
+	return nil
+}
+
+func runShow(args []string, cfg Config) error {
+	if len(args) != 1 {
+		return fmt.Errorf("%w: show requires a habit id", ErrUsage)
+	}
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	h, err := habit.Find(store, args[0])
+	if err != nil {
+		return err
+	}
+	status := "active"
+	if h.Archived {
+		status = "archived"
+	}
+	description := h.Description
+	if description == "" {
+		description = "-"
+	}
+	created := "unknown"
+	if !h.CreatedAt.IsZero() {
+		created = h.CreatedAt.Format(time.DateOnly)
+	}
+	fmt.Fprintf(cfg.Stdout, "id: %s\n", h.ID)
+	fmt.Fprintf(cfg.Stdout, "name: %s\n", h.Name)
+	fmt.Fprintf(cfg.Stdout, "description: %s\n", description)
+	fmt.Fprintf(cfg.Stdout, "status: %s\n", status)
+	fmt.Fprintf(cfg.Stdout, "created: %s\n", created)
+	fmt.Fprintf(cfg.Stdout, "current streak: %d\n", habit.CurrentStreak(h, time.Now()))
+	fmt.Fprintf(cfg.Stdout, "completions: %d\n", len(h.Completions))
+	recent := recentCompletions(h.Completions, 5)
+	if len(recent) > 0 {
+		fmt.Fprintf(cfg.Stdout, "recent: %s\n", strings.Join(recent, ", "))
+	}
+	return nil
+}
+
+func recentCompletions(completions []string, limit int) []string {
+	recent := append([]string(nil), completions...)
+	sort.Sort(sort.Reverse(sort.StringSlice(recent)))
+	if len(recent) > limit {
+		return recent[:limit]
+	}
+	return recent
+}
+
+func runSearch(args []string, cfg Config) error {
+	if len(args) == 0 {
+		return fmt.Errorf("%w: search requires a query", ErrUsage)
+	}
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	matches := habit.Search(store, strings.Join(args, " "))
+	if len(matches) == 0 {
+		fmt.Fprintln(cfg.Stdout, "no matching habits")
+		return nil
+	}
+	for _, h := range matches {
+		if h.Description == "" {
+			fmt.Fprintf(cfg.Stdout, "%s  %s\n", h.ID, h.Name)
+			continue
+		}
+		fmt.Fprintf(cfg.Stdout, "%s  %s  %s\n", h.ID, h.Name, h.Description)
+	}
 	return nil
 }
 

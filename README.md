@@ -13,10 +13,11 @@ walk  1 day   Evening walk
 ## Features
 
 - Daily habit tracking: add habits, mark them done, and review today's todo/done status.
+- Flexible completion editing: backfill a missed date with `log` or undo today's completion.
 - Streak protection: use `next` to see unfinished habits sorted by the streak you can preserve.
 - Local-first storage: keep everything in `~/.streakforge.json`, with readable JSON and no account.
 - Durable history: archive habits without deleting completion history.
-- Useful reporting: view streaks, weekly pulse, summary stats, and CSV exports.
+- Useful reporting: view habit details, search habits, streaks, weekly pulse, summary stats, and CSV exports.
 - Recovery tools: create timestamped backups and restore them when needed.
 
 ## Quick Start
@@ -30,6 +31,8 @@ go run ./cmd/streakforge list
 go run ./cmd/streakforge today
 go run ./cmd/streakforge next
 go run ./cmd/streakforge done <habit-id>
+go run ./cmd/streakforge log <habit-id> 2026-06-26
+go run ./cmd/streakforge show <habit-id>
 go run ./cmd/streakforge streaks
 ```
 
@@ -41,6 +44,9 @@ go run ./cmd/streakforge next
 
 # Mark one habit complete.
 go run ./cmd/streakforge done <habit-id>
+
+# Backfill yesterday if you forgot to log it.
+go run ./cmd/streakforge log <habit-id> 2026-06-26
 
 # Check your streaks.
 go run ./cmd/streakforge streaks
@@ -58,6 +64,10 @@ protect the habits most at risk.
 | `today` | Show today's done/todo status. |
 | `next` | Show unfinished habits prioritized by streaks at risk. |
 | `done <habit-id>` | Complete a habit for today. |
+| `log <habit-id> <yyyy-mm-dd>` | Complete a habit for a specific date. |
+| `undo <habit-id>` | Remove today's completion from a habit. |
+| `show <habit-id>` | Show details, status, streak, and recent completions. |
+| `search <query>` | Find active habits by name or description. |
 | `streaks` | Show current streak lengths. |
 | `pulse` | Show the last seven days of completion counts. |
 | `stats` | Show active, archived, completion, and rate totals. |
