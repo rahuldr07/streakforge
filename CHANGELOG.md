@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add `log` to record completions for a specific date.
+- Add `undo` to remove today's completion from a habit.
+- Add `show` to inspect one habit's details and recent completions.
+- Add `search` to find active habits by name or description.
+- Show the best current active streak in `stats`.
 - Add `next` to prioritize today's unfinished habits by streaks at risk.
 - Reject completions for archived habits.
 - Show the longest per-habit completion count in `stats`.
