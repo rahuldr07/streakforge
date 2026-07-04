@@ -2,6 +2,7 @@ package habit
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"strconv"
 	"time"
@@ -26,4 +27,10 @@ func WriteCSV(w io.Writer, store Store) error {
 	}
 	writer.Flush()
 	return writer.Error()
+}
+
+func WriteJSON(w io.Writer, store Store) error {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(store)
 }

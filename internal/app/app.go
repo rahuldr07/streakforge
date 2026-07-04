@@ -49,6 +49,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runToday(cfg)
 	case "next":
 		return runNext(cfg)
+	case "missed":
+		return runMissed(cfg)
 	case "done":
 		return runDone(args[1:], cfg)
 	case "log":
@@ -74,7 +76,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "restore":
 		return runRestore(args[1:], cfg)
 	case "export":
-		return runExport(cfg)
+		return runExport(args[1:], cfg)
 	case "help", "--help", "-h":
 		printHelp(cfg.Stdout)
 		return nil
@@ -92,6 +94,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge list")
 	fmt.Fprintln(w, "  streakforge today")
 	fmt.Fprintln(w, "  streakforge next")
+	fmt.Fprintln(w, "  streakforge missed")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge log <habit-id> <yyyy-mm-dd>")
 	fmt.Fprintln(w, "  streakforge undo <habit-id>")
@@ -104,7 +107,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge restore <backup-path>")
-	fmt.Fprintln(w, "  streakforge export")
+	fmt.Fprintln(w, "  streakforge export [csv|json]")
 }
 
 func runNext(cfg Config) error {
@@ -119,6 +122,26 @@ func runNext(cfg Config) error {
 	}
 	for _, action := range actions {
 		fmt.Fprintf(cfg.Stdout, "%s  %s  %s\n", action.ID, streakText(action.CurrentStreak), action.Name)
+	}
+	return nil
+}
+
+func runMissed(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	missed := habit.Missed(store, time.Now())
+	if len(missed) == 0 {
+		fmt.Fprintln(cfg.Stdout, "no missed habits yesterday")
+		return nil
+	}
+	for _, h := range missed {
+		last := h.LastCompleted
+		if last == "" {
+			last = "never"
+		}
+		fmt.Fprintf(cfg.Stdout, "%s  last: %s  streak: %s  %s\n", h.ID, last, streakText(h.CurrentStreak), h.Name)
 	}
 	return nil
 }
@@ -223,12 +246,26 @@ func pulseBar(count int) string {
 	return "■■■"
 }
 
-func runExport(cfg Config) error {
+func runExport(args []string, cfg Config) error {
+	format := "csv"
+	if len(args) > 1 {
+		return fmt.Errorf("%w: export accepts csv or json", ErrUsage)
+	}
+	if len(args) == 1 {
+		format = strings.ToLower(args[0])
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
-	return habit.WriteCSV(cfg.Stdout, store)
+	switch format {
+	case "csv":
+		return habit.WriteCSV(cfg.Stdout, store)
+	case "json":
+		return habit.WriteJSON(cfg.Stdout, store)
+	default:
+		return fmt.Errorf("%w: export accepts csv or json", ErrUsage)
+	}
 }
 
 func runArchive(args []string, cfg Config) error {

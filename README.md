@@ -15,6 +15,7 @@ walk  1 day   Evening walk
 - Daily habit tracking: add habits, mark them done, and review today's todo/done status.
 - Flexible completion editing: backfill a missed date with `log` or undo today's completion.
 - Streak protection: use `next` to see unfinished habits sorted by the streak you can preserve.
+- Recovery view: use `missed` to find habits skipped yesterday and catch up quickly.
 - Local-first storage: keep everything in `~/.streakforge.json`, with readable JSON and no account.
 - Durable history: archive habits without deleting completion history.
 - Useful reporting: view habit details, search habits, streaks, weekly pulse, summary stats, and CSV exports.
@@ -30,6 +31,7 @@ go run ./cmd/streakforge add read "Read ten pages"
 go run ./cmd/streakforge list
 go run ./cmd/streakforge today
 go run ./cmd/streakforge next
+go run ./cmd/streakforge missed
 go run ./cmd/streakforge done <habit-id>
 go run ./cmd/streakforge log <habit-id> 2026-06-26
 go run ./cmd/streakforge show <habit-id>
@@ -63,6 +65,7 @@ protect the habits most at risk.
 | `list` | Show active habits. |
 | `today` | Show today's done/todo status. |
 | `next` | Show unfinished habits prioritized by streaks at risk. |
+| `missed` | Show active habits that were not completed yesterday. |
 | `done <habit-id>` | Complete a habit for today. |
 | `log <habit-id> <yyyy-mm-dd>` | Complete a habit for a specific date. |
 | `undo <habit-id>` | Remove today's completion from a habit. |
@@ -75,7 +78,7 @@ protect the habits most at risk.
 | `rename <habit-id> <name> [description]` | Update a habit's name or description. |
 | `backup` | Save a timestamped copy of the store. |
 | `restore <backup-path>` | Restore a backup after saving the current store. |
-| `export` | Print habit data as CSV. |
+| `export [csv|json]` | Print habit data as CSV or formatted JSON. |
 
 ## Storage
 

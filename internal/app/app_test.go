@@ -124,6 +124,57 @@ func TestNextPrintsPendingHabitsByStreakPriority(t *testing.T) {
 	}
 }
 
+func TestMissedPrintsHabitsSkippedYesterday(t *testing.T) {
+	home := t.TempDir()
+	now := time.Now()
+	yesterday := now.AddDate(0, 0, -1).Format(time.DateOnly)
+	twoDaysAgo := now.AddDate(0, 0, -2).Format(time.DateOnly)
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read", "completions": ["` + twoDaysAgo + `"]},
+    {"id": "walk", "name": "Walk", "completions": ["` + yesterday + `"]},
+    {"id": "water", "name": "Water"},
+    {"id": "old", "name": "Old", "archived": true}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"missed"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	output := out.String()
+	if !strings.Contains(output, "water  last: never") {
+		t.Fatalf("missed output missing never-completed habit: %s", output)
+	}
+	if !strings.Contains(output, "read  last: "+twoDaysAgo) {
+		t.Fatalf("missed output missing older completion: %s", output)
+	}
+	if strings.Contains(output, "walk") || strings.Contains(output, "old") {
+		t.Fatalf("missed output included completed or archived habits: %s", output)
+	}
+}
+
+func TestExportJSONPrintsStore(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read"}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"export", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"id": "read"`) {
+		t.Fatalf("json export missing habit id: %s", out.String())
+	}
+}
+
 func TestLogCompletesHabitForSpecificDate(t *testing.T) {
 	home := t.TempDir()
 	data := `{"habits": [{"id": "read", "name": "Read"}]}`
