@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -67,6 +68,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runStats(cfg)
 	case "pulse":
 		return runPulse(cfg)
+	case "calendar":
+		return runCalendar(args[1:], cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
 	case "rename":
@@ -103,6 +106,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats")
 	fmt.Fprintln(w, "  streakforge pulse")
+	fmt.Fprintln(w, "  streakforge calendar [days]")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
@@ -231,6 +235,47 @@ func runPulse(cfg Config) error {
 		fmt.Fprintf(cfg.Stdout, "%s  %s %d\n", day.Date, pulseBar(day.Completion), day.Completion)
 	}
 	return nil
+}
+
+func runCalendar(args []string, cfg Config) error {
+	days := 14
+	if len(args) > 1 {
+		return fmt.Errorf("%w: calendar accepts an optional day count", ErrUsage)
+	}
+	if len(args) == 1 {
+		parsed, err := strconv.Atoi(args[0])
+		if err != nil || parsed <= 0 {
+			return fmt.Errorf("%w: calendar days must be a positive number", ErrUsage)
+		}
+		days = parsed
+	}
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	for _, day := range habit.CompletionCalendar(store, time.Now(), days) {
+		percent := 0
+		if day.Total > 0 {
+			percent = int(day.Rate*100 + 0.5)
+		}
+		fmt.Fprintf(cfg.Stdout, "%s  %d/%d  %3d%%  %s\n", day.Date, day.Complete, day.Total, percent, calendarBar(day.Rate))
+	}
+	return nil
+}
+
+func calendarBar(rate float64) string {
+	switch {
+	case rate >= 1:
+		return "#####"
+	case rate >= 0.75:
+		return "####-"
+	case rate >= 0.5:
+		return "###--"
+	case rate > 0:
+		return "#----"
+	default:
+		return "-----"
+	}
 }
 
 func pulseBar(count int) string {

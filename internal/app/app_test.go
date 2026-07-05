@@ -158,6 +158,35 @@ func TestMissedPrintsHabitsSkippedYesterday(t *testing.T) {
 	}
 }
 
+func TestCalendarPrintsCompletionRates(t *testing.T) {
+	home := t.TempDir()
+	now := time.Now()
+	today := now.Format(time.DateOnly)
+	yesterday := now.AddDate(0, 0, -1).Format(time.DateOnly)
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read", "completions": ["` + today + `", "` + yesterday + `"]},
+    {"id": "walk", "name": "Walk", "completions": ["` + today + `"]}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"calendar", "2"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	output := out.String()
+	if !strings.Contains(output, yesterday+"  1/2   50%") {
+		t.Fatalf("calendar output missing yesterday: %s", output)
+	}
+	if !strings.Contains(output, today+"  2/2  100%") {
+		t.Fatalf("calendar output missing today: %s", output)
+	}
+}
+
 func TestExportJSONPrintsStore(t *testing.T) {
 	home := t.TempDir()
 	data := `{"habits": [{"id": "read", "name": "Read"}]}`

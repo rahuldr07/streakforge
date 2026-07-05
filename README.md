@@ -19,6 +19,7 @@ walk  1 day   Evening walk
 - Local-first storage: keep everything in `~/.streakforge.json`, with readable JSON and no account.
 - Durable history: archive habits without deleting completion history.
 - Useful reporting: view habit details, search habits, streaks, weekly pulse, summary stats, and CSV exports.
+- Calendar view: scan recent completion rates across all active habits.
 - Recovery tools: create timestamped backups and restore them when needed.
 
 ## Quick Start
@@ -36,6 +37,7 @@ go run ./cmd/streakforge done <habit-id>
 go run ./cmd/streakforge log <habit-id> 2026-06-26
 go run ./cmd/streakforge show <habit-id>
 go run ./cmd/streakforge streaks
+go run ./cmd/streakforge calendar 14
 ```
 
 ## Everyday Flow
@@ -73,6 +75,7 @@ protect the habits most at risk.
 | `search <query>` | Find active habits by name or description. |
 | `streaks` | Show current streak lengths. |
 | `pulse` | Show the last seven days of completion counts. |
+| `calendar [days]` | Show recent daily completion rates for active habits. |
 | `stats` | Show active, archived, completion, and rate totals. |
 | `archive <habit-id>` | Hide a habit without deleting its history. |
 | `rename <habit-id> <name> [description]` | Update a habit's name or description. |
