@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add `calendar` to show recent daily completion rates.
+- Add `doctor` to report common local store issues.
+- Add `lagging` to find habits quiet for several days.
+- Add `export completions` for one CSV row per completion event.
+- Sort `streaks` by strongest current streak and include latest completion dates.
 - Add `log` to record completions for a specific date.
 - Add `undo` to remove today's completion from a habit.
 - Add `show` to inspect one habit's details and recent completions.
