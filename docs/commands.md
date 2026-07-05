@@ -7,6 +7,7 @@
 - `streakforge today`
 - `streakforge next` prints unfinished active habits for today, prioritized by the streak each habit can preserve.
 - `streakforge missed` prints active habits that were not completed yesterday, including their last completion date.
+- `streakforge lagging [days]` prints active habits that have not been completed for the given number of days.
 - `streakforge done <habit-id>`
 - `streakforge log <habit-id> <yyyy-mm-dd>` records a completion for a specific date.
 - `streakforge undo <habit-id>` removes today's completion from an active habit.

@@ -158,6 +158,39 @@ func TestMissedPrintsHabitsSkippedYesterday(t *testing.T) {
 	}
 }
 
+func TestLaggingPrintsQuietHabits(t *testing.T) {
+	home := t.TempDir()
+	now := time.Now()
+	fourDaysAgo := now.AddDate(0, 0, -4).Format(time.DateOnly)
+	yesterday := now.AddDate(0, 0, -1).Format(time.DateOnly)
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read", "completions": ["` + fourDaysAgo + `"]},
+    {"id": "walk", "name": "Walk", "completions": ["` + yesterday + `"]},
+    {"id": "water", "name": "Water"}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"lagging", "3"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	output := out.String()
+	if !strings.Contains(output, "water  quiet: 4 days  last: never") {
+		t.Fatalf("lagging output missing never-completed habit: %s", output)
+	}
+	if !strings.Contains(output, "read  quiet: 4 days  last: "+fourDaysAgo) {
+		t.Fatalf("lagging output missing quiet habit: %s", output)
+	}
+	if strings.Contains(output, "walk") {
+		t.Fatalf("lagging output included recent habit: %s", output)
+	}
+}
+
 func TestCalendarPrintsCompletionRates(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()

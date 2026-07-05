@@ -52,6 +52,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runNext(cfg)
 	case "missed":
 		return runMissed(cfg)
+	case "lagging":
+		return runLagging(args[1:], cfg)
 	case "done":
 		return runDone(args[1:], cfg)
 	case "log":
@@ -100,6 +102,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge today")
 	fmt.Fprintln(w, "  streakforge next")
 	fmt.Fprintln(w, "  streakforge missed")
+	fmt.Fprintln(w, "  streakforge lagging [days]")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge log <habit-id> <yyyy-mm-dd>")
 	fmt.Fprintln(w, "  streakforge undo <habit-id>")
@@ -149,6 +152,37 @@ func runMissed(cfg Config) error {
 			last = "never"
 		}
 		fmt.Fprintf(cfg.Stdout, "%s  last: %s  streak: %s  %s\n", h.ID, last, streakText(h.CurrentStreak), h.Name)
+	}
+	return nil
+}
+
+func runLagging(args []string, cfg Config) error {
+	days := 3
+	if len(args) > 1 {
+		return fmt.Errorf("%w: lagging accepts an optional day count", ErrUsage)
+	}
+	if len(args) == 1 {
+		parsed, err := strconv.Atoi(args[0])
+		if err != nil || parsed < 0 {
+			return fmt.Errorf("%w: lagging days must be zero or greater", ErrUsage)
+		}
+		days = parsed
+	}
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	lagging := habit.Lagging(store, time.Now(), days)
+	if len(lagging) == 0 {
+		fmt.Fprintf(cfg.Stdout, "no habits quiet for %s or more\n", streakText(days))
+		return nil
+	}
+	for _, h := range lagging {
+		last := h.LastCompleted
+		if last == "" {
+			last = "never"
+		}
+		fmt.Fprintf(cfg.Stdout, "%s  quiet: %s  last: %s  %s\n", h.ID, streakText(h.DaysQuiet), last, h.Name)
 	}
 	return nil
 }
