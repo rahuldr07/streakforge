@@ -408,8 +408,17 @@ func runStreaks(cfg Config) error {
 	if err != nil {
 		return err
 	}
-	for _, h := range habit.Active(store) {
-		fmt.Fprintf(cfg.Stdout, "%s  %d days  %s\n", h.ID, habit.CurrentStreak(h, time.Now()), h.Name)
+	reports := habit.StreakReports(store, time.Now())
+	if len(reports) == 0 {
+		fmt.Fprintln(cfg.Stdout, "no active habits")
+		return nil
+	}
+	for _, report := range reports {
+		last := report.LastCompleted
+		if last == "" {
+			last = "never"
+		}
+		fmt.Fprintf(cfg.Stdout, "%s  %s  last: %s  %s\n", report.ID, streakText(report.CurrentStreak), last, report.Name)
 	}
 	return nil
 }

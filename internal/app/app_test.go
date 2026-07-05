@@ -89,6 +89,38 @@ func TestStatsPrintsBestCurrentStreak(t *testing.T) {
 	}
 }
 
+func TestStreaksPrintsSortedReports(t *testing.T) {
+	home := t.TempDir()
+	now := time.Now()
+	today := now.Format(time.DateOnly)
+	yesterday := now.AddDate(0, 0, -1).Format(time.DateOnly)
+	data := `{
+  "habits": [
+    {"id": "walk", "name": "Walk", "completions": ["` + today + `"]},
+    {"id": "read", "name": "Read", "completions": ["` + yesterday + `", "` + today + `"]}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"streaks"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(out.String()), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("lines = %d, want 2; output=%q", len(lines), out.String())
+	}
+	if !strings.Contains(lines[0], "read  2 days  last: "+today+"  Read") {
+		t.Fatalf("first streak line = %q", lines[0])
+	}
+	if !strings.Contains(lines[1], "walk  1 day  last: "+today+"  Walk") {
+		t.Fatalf("second streak line = %q", lines[1])
+	}
+}
+
 func TestNextPrintsPendingHabitsByStreakPriority(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()

@@ -78,7 +78,7 @@ protect the habits most at risk.
 | `undo <habit-id>` | Remove today's completion from a habit. |
 | `show <habit-id>` | Show details, status, streak, and recent completions. |
 | `search <query>` | Find active habits by name or description. |
-| `streaks` | Show current streak lengths. |
+| `streaks` | Show current streak lengths sorted strongest first. |
 | `pulse` | Show the last seven days of completion counts. |
 | `calendar [days]` | Show recent daily completion rates for active habits. |
 | `stats` | Show active, archived, completion, and rate totals. |
