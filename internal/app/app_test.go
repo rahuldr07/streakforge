@@ -259,6 +259,23 @@ func TestExportJSONPrintsStore(t *testing.T) {
 	}
 }
 
+func TestExportCompletionsPrintsCompletionRows(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read", "completions": ["2026-07-05"]}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"export", "completions"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "read,Read,2026-07-05,false") {
+		t.Fatalf("completion export missing row: %s", out.String())
+	}
+}
+
 func TestLogCompletesHabitForSpecificDate(t *testing.T) {
 	home := t.TempDir()
 	data := `{"habits": [{"id": "read", "name": "Read"}]}`

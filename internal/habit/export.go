@@ -29,6 +29,27 @@ func WriteCSV(w io.Writer, store Store) error {
 	return writer.Error()
 }
 
+func WriteCompletionCSV(w io.Writer, store Store) error {
+	writer := csv.NewWriter(w)
+	if err := writer.Write([]string{"habit_id", "habit_name", "date", "archived"}); err != nil {
+		return err
+	}
+	for _, h := range store.Habits {
+		for _, completion := range h.Completions {
+			if err := writer.Write([]string{
+				h.ID,
+				h.Name,
+				completion,
+				strconv.FormatBool(h.Archived),
+			}); err != nil {
+				return err
+			}
+		}
+	}
+	writer.Flush()
+	return writer.Error()
+}
+
 func WriteJSON(w io.Writer, store Store) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")

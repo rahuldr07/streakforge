@@ -25,5 +25,6 @@
 - `streakforge doctor` checks the local store for duplicate IDs, empty names, invalid dates, duplicate completions, and future completions.
 - `streakforge export` writes CSV with habit IDs, names, descriptions, creation timestamps, archive status, and completion counts.
 - `streakforge export json` writes the full habit store as formatted JSON.
+- `streakforge export completions` writes one CSV row per completion event.
 - `streakforge backup` writes a timestamped copy of the JSON store next to the original file.
 - `streakforge restore <backup-path>` restores a backup and saves the previous current store first.

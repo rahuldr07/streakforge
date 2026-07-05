@@ -43,3 +43,21 @@ func TestWriteJSON(t *testing.T) {
 		t.Fatalf("json missing name: %s", out.String())
 	}
 }
+
+func TestWriteCompletionCSV(t *testing.T) {
+	var out strings.Builder
+	err := WriteCompletionCSV(&out, Store{Habits: []Habit{{
+		ID:          "h1",
+		Name:        "Read",
+		Completions: []string{"2026-07-04", "2026-07-05"},
+	}}})
+	if err != nil {
+		t.Fatalf("WriteCompletionCSV returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "habit_id,habit_name,date,archived") {
+		t.Fatalf("unexpected csv header: %s", out.String())
+	}
+	if !strings.Contains(out.String(), "h1,Read,2026-07-05,false") {
+		t.Fatalf("unexpected csv row: %s", out.String())
+	}
+}
