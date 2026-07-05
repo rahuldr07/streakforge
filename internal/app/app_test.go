@@ -187,6 +187,28 @@ func TestCalendarPrintsCompletionRates(t *testing.T) {
 	}
 }
 
+func TestDoctorPrintsStoreHealthIssues(t *testing.T) {
+	home := t.TempDir()
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read"},
+    {"id": "read", "name": "Read Again"}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"doctor"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "error  duplicate habit id: read") {
+		t.Fatalf("doctor output missing duplicate id: %s", out.String())
+	}
+}
+
 func TestExportJSONPrintsStore(t *testing.T) {
 	home := t.TempDir()
 	data := `{"habits": [{"id": "read", "name": "Read"}]}`

@@ -70,6 +70,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runPulse(cfg)
 	case "calendar":
 		return runCalendar(args[1:], cfg)
+	case "doctor":
+		return runDoctor(cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
 	case "rename":
@@ -107,6 +109,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge stats")
 	fmt.Fprintln(w, "  streakforge pulse")
 	fmt.Fprintln(w, "  streakforge calendar [days]")
+	fmt.Fprintln(w, "  streakforge doctor")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
@@ -259,6 +262,22 @@ func runCalendar(args []string, cfg Config) error {
 			percent = int(day.Rate*100 + 0.5)
 		}
 		fmt.Fprintf(cfg.Stdout, "%s  %d/%d  %3d%%  %s\n", day.Date, day.Complete, day.Total, percent, calendarBar(day.Rate))
+	}
+	return nil
+}
+
+func runDoctor(cfg Config) error {
+	store, err := habit.Load(habit.DefaultPath(cfg.Home))
+	if err != nil {
+		return err
+	}
+	issues := habit.Doctor(store, time.Now())
+	if len(issues) == 0 {
+		fmt.Fprintln(cfg.Stdout, "ok  store looks healthy")
+		return nil
+	}
+	for _, issue := range issues {
+		fmt.Fprintf(cfg.Stdout, "%s  %s\n", issue.Severity, issue.Message)
 	}
 	return nil
 }

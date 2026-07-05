@@ -21,6 +21,7 @@ walk  1 day   Evening walk
 - Useful reporting: view habit details, search habits, streaks, weekly pulse, summary stats, and CSV exports.
 - Calendar view: scan recent completion rates across all active habits.
 - Recovery tools: create timestamped backups and restore them when needed.
+- Store diagnostics: run `doctor` to spot duplicate IDs, bad dates, and future completions.
 
 ## Quick Start
 
@@ -38,6 +39,7 @@ go run ./cmd/streakforge log <habit-id> 2026-06-26
 go run ./cmd/streakforge show <habit-id>
 go run ./cmd/streakforge streaks
 go run ./cmd/streakforge calendar 14
+go run ./cmd/streakforge doctor
 ```
 
 ## Everyday Flow
@@ -77,6 +79,7 @@ protect the habits most at risk.
 | `pulse` | Show the last seven days of completion counts. |
 | `calendar [days]` | Show recent daily completion rates for active habits. |
 | `stats` | Show active, archived, completion, and rate totals. |
+| `doctor` | Check the local store for common data issues. |
 | `archive <habit-id>` | Hide a habit without deleting its history. |
 | `rename <habit-id> <name> [description]` | Update a habit's name or description. |
 | `backup` | Save a timestamped copy of the store. |
