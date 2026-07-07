@@ -8,9 +8,16 @@ type DayPulse struct {
 }
 
 func WeeklyPulse(store Store, today time.Time) []DayPulse {
-	start := today.AddDate(0, 0, -6)
-	pulse := make([]DayPulse, 0, 7)
-	for i := 0; i < 7; i++ {
+	return Pulse(store, today, 7)
+}
+
+func Pulse(store Store, today time.Time, days int) []DayPulse {
+	if days <= 0 {
+		return nil
+	}
+	start := today.AddDate(0, 0, -days+1)
+	pulse := make([]DayPulse, 0, days)
+	for i := 0; i < days; i++ {
 		day := start.AddDate(0, 0, i).Format(time.DateOnly)
 		count := 0
 		for _, h := range store.Habits {

@@ -21,7 +21,7 @@
 ## Reporting
 
 - `streakforge streaks` prints current streaks sorted strongest first, including the latest completion date.
-- `streakforge pulse` prints the last seven days of active habit completions.
+- `streakforge pulse [days]` prints recent active habit completions.
 - `streakforge calendar [days]` prints recent daily completion rates across active habits.
 - `streakforge stats [json]` prints active and archived habit counts, total completions, best current streak, and the largest completion count on a single habit.
 - `streakforge doctor` checks the local store for duplicate IDs, empty names, invalid dates, duplicate completions, and future completions.

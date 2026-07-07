@@ -84,7 +84,7 @@ protect the habits most at risk.
 | `show <habit-id>` | Show details, status, streak, and recent completions. |
 | `search [--all] <query>` | Find habits by name or description. |
 | `streaks` | Show current streak lengths sorted strongest first. |
-| `pulse` | Show the last seven days of completion counts. |
+| `pulse [days]` | Show recent completion counts. |
 | `calendar [days]` | Show recent daily completion rates for active habits. |
 | `stats [json]` | Show active, archived, completion, and rate totals. |
 | `doctor` | Check the local store for common data issues. |

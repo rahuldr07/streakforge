@@ -72,7 +72,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "stats":
 		return runStats(args[1:], cfg)
 	case "pulse":
-		return runPulse(cfg)
+		return runPulse(args[1:], cfg)
 	case "calendar":
 		return runCalendar(args[1:], cfg)
 	case "doctor":
@@ -118,7 +118,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge search [--all] <query>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats [json]")
-	fmt.Fprintln(w, "  streakforge pulse")
+	fmt.Fprintln(w, "  streakforge pulse [days]")
 	fmt.Fprintln(w, "  streakforge calendar [days]")
 	fmt.Fprintln(w, "  streakforge doctor")
 	fmt.Fprintln(w, "  streakforge repair")
@@ -298,12 +298,23 @@ func runRename(args []string, cfg Config) error {
 	return nil
 }
 
-func runPulse(cfg Config) error {
+func runPulse(args []string, cfg Config) error {
+	days := 7
+	if len(args) > 1 {
+		return fmt.Errorf("%w: pulse accepts an optional day count", ErrUsage)
+	}
+	if len(args) == 1 {
+		parsed, err := strconv.Atoi(args[0])
+		if err != nil || parsed <= 0 {
+			return fmt.Errorf("%w: pulse days must be a positive number", ErrUsage)
+		}
+		days = parsed
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
-	for _, day := range habit.WeeklyPulse(store, time.Now()) {
+	for _, day := range habit.Pulse(store, time.Now(), days) {
 		fmt.Fprintf(cfg.Stdout, "%s  %s %d\n", day.Date, pulseBar(day.Completion), day.Completion)
 	}
 	return nil

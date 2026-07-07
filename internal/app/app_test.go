@@ -347,6 +347,19 @@ func TestCalendarPrintsCompletionRates(t *testing.T) {
 	}
 }
 
+func TestPulseAcceptsDayCount(t *testing.T) {
+	home := t.TempDir()
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"pulse", "3"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(out.String()), "\n")
+	if len(lines) != 3 {
+		t.Fatalf("lines = %d, want 3; output=%q", len(lines), out.String())
+	}
+}
+
 func TestDoctorPrintsStoreHealthIssues(t *testing.T) {
 	home := t.TempDir()
 	data := `{

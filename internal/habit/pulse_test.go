@@ -18,3 +18,16 @@ func TestWeeklyPulseCountsActiveHabitCompletions(t *testing.T) {
 		t.Fatalf("last pulse = %+v", last)
 	}
 }
+
+func TestPulseUsesRequestedDayCount(t *testing.T) {
+	today := time.Date(2026, 5, 26, 10, 0, 0, 0, time.UTC)
+
+	pulse := Pulse(Store{}, today, 3)
+
+	if len(pulse) != 3 {
+		t.Fatalf("len(pulse) = %d, want 3", len(pulse))
+	}
+	if pulse[0].Date != "2026-05-24" || pulse[2].Date != "2026-05-26" {
+		t.Fatalf("pulse range = %+v", pulse)
+	}
+}
