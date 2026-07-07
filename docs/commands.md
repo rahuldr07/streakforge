@@ -13,7 +13,7 @@
 - `streakforge log <habit-id> <yyyy-mm-dd>` records a completion for a specific date.
 - `streakforge undo <habit-id>` removes today's completion from an active habit.
 - `streakforge show <habit-id>` prints one habit's details, status, streak, and recent completions.
-- `streakforge search <query>` finds active habits by name or description.
+- `streakforge search [--all] <query>` finds habits by name or description, optionally including archived habits.
 - `streakforge archive <habit-id>`
 - `streakforge unarchive <habit-id>` restores an archived habit.
 - `streakforge rename <habit-id> <name> [description]`

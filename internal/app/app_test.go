@@ -555,3 +555,24 @@ func TestSearchFindsMatchingHabits(t *testing.T) {
 		t.Fatalf("search output included archived habit: %s", out.String())
 	}
 }
+
+func TestSearchAllIncludesArchivedHabits(t *testing.T) {
+	home := t.TempDir()
+	data := `{
+  "habits": [
+    {"id": "old", "name": "Old Books", "archived": true}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"search", "--all", "books"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "old  archived  Old Books") {
+		t.Fatalf("search --all output missing archived habit: %s", out.String())
+	}
+}

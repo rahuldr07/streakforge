@@ -82,7 +82,7 @@ protect the habits most at risk.
 | `log <habit-id> <yyyy-mm-dd>` | Complete a habit for a specific date. |
 | `undo <habit-id>` | Remove today's completion from a habit. |
 | `show <habit-id>` | Show details, status, streak, and recent completions. |
-| `search <query>` | Find active habits by name or description. |
+| `search [--all] <query>` | Find habits by name or description. |
 | `streaks` | Show current streak lengths sorted strongest first. |
 | `pulse` | Show the last seven days of completion counts. |
 | `calendar [days]` | Show recent daily completion rates for active habits. |

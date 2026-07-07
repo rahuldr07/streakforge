@@ -29,3 +29,14 @@ func TestSearchMatchesActiveNameAndDescription(t *testing.T) {
 		t.Fatalf("match ID = %q", matches[0].ID)
 	}
 }
+
+func TestSearchWithOptionsCanIncludeArchivedHabits(t *testing.T) {
+	store := Store{Habits: []Habit{
+		{ID: "old", Name: "Old books", Archived: true},
+	}}
+
+	matches := SearchWithOptions(store, "book", true)
+	if len(matches) != 1 || matches[0].ID != "old" {
+		t.Fatalf("matches = %+v", matches)
+	}
+}

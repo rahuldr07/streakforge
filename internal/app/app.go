@@ -115,7 +115,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge log <habit-id> <yyyy-mm-dd>")
 	fmt.Fprintln(w, "  streakforge undo <habit-id>")
 	fmt.Fprintln(w, "  streakforge show <habit-id>")
-	fmt.Fprintln(w, "  streakforge search <query>")
+	fmt.Fprintln(w, "  streakforge search [--all] <query>")
 	fmt.Fprintln(w, "  streakforge streaks")
 	fmt.Fprintln(w, "  streakforge stats [json]")
 	fmt.Fprintln(w, "  streakforge pulse")
@@ -626,18 +626,41 @@ func runSearch(args []string, cfg Config) error {
 	if len(args) == 0 {
 		return fmt.Errorf("%w: search requires a query", ErrUsage)
 	}
+	includeArchived := false
+	if args[0] == "--all" {
+		includeArchived = true
+		args = args[1:]
+	}
+	if len(args) == 0 {
+		return fmt.Errorf("%w: search requires a query", ErrUsage)
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
-	matches := habit.Search(store, strings.Join(args, " "))
+	matches := habit.SearchWithOptions(store, strings.Join(args, " "), includeArchived)
 	if len(matches) == 0 {
 		fmt.Fprintln(cfg.Stdout, "no matching habits")
 		return nil
 	}
 	for _, h := range matches {
+		status := ""
+		if includeArchived {
+			status = "active"
+			if h.Archived {
+				status = "archived"
+			}
+		}
 		if h.Description == "" {
+			if includeArchived {
+				fmt.Fprintf(cfg.Stdout, "%s  %s  %s\n", h.ID, status, h.Name)
+				continue
+			}
 			fmt.Fprintf(cfg.Stdout, "%s  %s\n", h.ID, h.Name)
+			continue
+		}
+		if includeArchived {
+			fmt.Fprintf(cfg.Stdout, "%s  %s  %s  %s\n", h.ID, status, h.Name, h.Description)
 			continue
 		}
 		fmt.Fprintf(cfg.Stdout, "%s  %s  %s\n", h.ID, h.Name, h.Description)
