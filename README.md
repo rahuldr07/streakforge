@@ -84,7 +84,7 @@ protect the habits most at risk.
 | `streaks` | Show current streak lengths sorted strongest first. |
 | `pulse` | Show the last seven days of completion counts. |
 | `calendar [days]` | Show recent daily completion rates for active habits. |
-| `stats` | Show active, archived, completion, and rate totals. |
+| `stats [json]` | Show active, archived, completion, and rate totals. |
 | `doctor` | Check the local store for common data issues. |
 | `archive <habit-id>` | Hide a habit without deleting its history. |
 | `rename <habit-id> <name> [description]` | Update a habit's name or description. |

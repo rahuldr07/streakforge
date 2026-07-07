@@ -3,12 +3,12 @@ package habit
 import "time"
 
 type Summary struct {
-	ActiveHabits      int
-	ArchivedHabits    int
-	TotalCompletions  int
-	LongestCompletion int
-	BestCurrentStreak int
-	CompletionRate    float64
+	ActiveHabits      int     `json:"active_habits"`
+	ArchivedHabits    int     `json:"archived_habits"`
+	TotalCompletions  int     `json:"total_completions"`
+	LongestCompletion int     `json:"longest_completion"`
+	BestCurrentStreak int     `json:"best_current_streak"`
+	CompletionRate    float64 `json:"completion_rate"`
 }
 
 func Summarize(store Store) Summary {

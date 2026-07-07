@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -69,7 +70,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "streaks":
 		return runStreaks(cfg)
 	case "stats":
-		return runStats(cfg)
+		return runStats(args[1:], cfg)
 	case "pulse":
 		return runPulse(cfg)
 	case "calendar":
@@ -112,7 +113,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge show <habit-id>")
 	fmt.Fprintln(w, "  streakforge search <query>")
 	fmt.Fprintln(w, "  streakforge streaks")
-	fmt.Fprintln(w, "  streakforge stats")
+	fmt.Fprintln(w, "  streakforge stats [json]")
 	fmt.Fprintln(w, "  streakforge pulse")
 	fmt.Fprintln(w, "  streakforge calendar [days]")
 	fmt.Fprintln(w, "  streakforge doctor")
@@ -416,12 +417,27 @@ func runArchive(args []string, cfg Config) error {
 	return nil
 }
 
-func runStats(cfg Config) error {
+func runStats(args []string, cfg Config) error {
+	format := "text"
+	if len(args) > 1 {
+		return fmt.Errorf("%w: stats accepts json", ErrUsage)
+	}
+	if len(args) == 1 {
+		format = strings.ToLower(args[0])
+		if format != "json" {
+			return fmt.Errorf("%w: stats accepts json", ErrUsage)
+		}
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	summary := habit.SummarizeAt(store, time.Now())
+	if format == "json" {
+		encoder := json.NewEncoder(cfg.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(summary)
+	}
 	fmt.Fprintf(cfg.Stdout, "active habits: %d\n", summary.ActiveHabits)
 	fmt.Fprintf(cfg.Stdout, "archived habits: %d\n", summary.ArchivedHabits)
 	fmt.Fprintf(cfg.Stdout, "total completions: %d\n", summary.TotalCompletions)

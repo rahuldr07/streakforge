@@ -127,6 +127,31 @@ func TestStatsPrintsBestCurrentStreak(t *testing.T) {
 	}
 }
 
+func TestStatsJSONPrintsSummary(t *testing.T) {
+	home := t.TempDir()
+	data := `{
+  "habits": [
+    {"id": "a", "name": "Read", "completions": ["2026-05-17"]},
+    {"id": "b", "name": "Run", "archived": true}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"stats", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"active_habits": 1`) {
+		t.Fatalf("json stats missing active count: %s", out.String())
+	}
+	if !strings.Contains(out.String(), `"archived_habits": 1`) {
+		t.Fatalf("json stats missing archived count: %s", out.String())
+	}
+}
+
 func TestStreaksPrintsSortedReports(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()
