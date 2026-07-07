@@ -49,7 +49,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "list":
 		return runList(cfg)
 	case "today":
-		return runToday(cfg)
+		return runToday(args[1:], cfg)
 	case "next":
 		return runNext(cfg)
 	case "missed":
@@ -102,7 +102,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge path")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
 	fmt.Fprintln(w, "  streakforge list")
-	fmt.Fprintln(w, "  streakforge today")
+	fmt.Fprintln(w, "  streakforge today [done|todo]")
 	fmt.Fprintln(w, "  streakforge next")
 	fmt.Fprintln(w, "  streakforge missed")
 	fmt.Fprintln(w, "  streakforge lagging [days]")
@@ -218,17 +218,37 @@ func runRestore(args []string, cfg Config) error {
 	return nil
 }
 
-func runToday(cfg Config) error {
+func runToday(args []string, cfg Config) error {
+	filter := "all"
+	if len(args) > 1 {
+		return fmt.Errorf("%w: today accepts done or todo", ErrUsage)
+	}
+	if len(args) == 1 {
+		filter = strings.ToLower(args[0])
+		if filter != "done" && filter != "todo" {
+			return fmt.Errorf("%w: today accepts done or todo", ErrUsage)
+		}
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	statuses := habit.Today(store, time.Now())
-	if len(statuses) == 0 {
+	filtered := make([]habit.TodayStatus, 0, len(statuses))
+	for _, status := range statuses {
+		if filter == "done" && !status.Completed {
+			continue
+		}
+		if filter == "todo" && status.Completed {
+			continue
+		}
+		filtered = append(filtered, status)
+	}
+	if len(filtered) == 0 {
 		fmt.Fprintln(cfg.Stdout, "no active habits")
 		return nil
 	}
-	for _, status := range statuses {
+	for _, status := range filtered {
 		mark := "todo"
 		if status.Completed {
 			mark = "done"

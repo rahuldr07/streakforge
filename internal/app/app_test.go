@@ -169,6 +169,38 @@ func TestNextPrintsPendingHabitsByStreakPriority(t *testing.T) {
 	}
 }
 
+func TestTodayFiltersDoneAndTodo(t *testing.T) {
+	home := t.TempDir()
+	today := time.Now().Format(time.DateOnly)
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read", "completions": ["` + today + `"]},
+    {"id": "walk", "name": "Walk"}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var done bytes.Buffer
+	err := RunWithConfig([]string{"today", "done"}, Config{Stdout: &done, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(done.String(), "done  read  Read") || strings.Contains(done.String(), "walk") {
+		t.Fatalf("done filter output = %s", done.String())
+	}
+
+	var todo bytes.Buffer
+	err = RunWithConfig([]string{"today", "todo"}, Config{Stdout: &todo, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(todo.String(), "todo  walk  Walk") || strings.Contains(todo.String(), "read") {
+		t.Fatalf("todo filter output = %s", todo.String())
+	}
+}
+
 func TestMissedPrintsHabitsSkippedYesterday(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()

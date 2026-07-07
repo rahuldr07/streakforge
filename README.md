@@ -72,7 +72,7 @@ protect the habits most at risk.
 | `path` | Print the active store path. |
 | `add <name> [description]` | Create a habit. |
 | `list` | Show active habits. |
-| `today` | Show today's done/todo status. |
+| `today [done|todo]` | Show today's status, optionally filtered. |
 | `next` | Show unfinished habits prioritized by streaks at risk. |
 | `missed` | Show active habits that were not completed yesterday. |
 | `lagging [days]` | Show active habits quiet for the given number of days. |
