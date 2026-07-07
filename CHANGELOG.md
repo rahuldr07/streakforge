@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add `path` to print the active store file.
+- Add `today done` and `today todo` filters.
+- Add `list --all` to include archived habits.
+- Add `stats json` for machine-readable summaries.
+- Add `repair` to deduplicate and sort completion history.
 - Add `calendar` to show recent daily completion rates.
 - Add `doctor` to report common local store issues.
 - Add `lagging` to find habits quiet for several days.
