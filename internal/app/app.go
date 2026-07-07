@@ -42,6 +42,8 @@ func RunWithConfig(args []string, cfg Config) error {
 	}
 
 	switch args[0] {
+	case "path":
+		return runPath(cfg)
 	case "add":
 		return runAdd(args[1:], cfg)
 	case "list":
@@ -97,6 +99,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  streakforge help")
+	fmt.Fprintln(w, "  streakforge path")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
 	fmt.Fprintln(w, "  streakforge list")
 	fmt.Fprintln(w, "  streakforge today")
@@ -118,6 +121,11 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge restore <backup-path>")
 	fmt.Fprintln(w, "  streakforge export [csv|json|completions]")
+}
+
+func runPath(cfg Config) error {
+	fmt.Fprintln(cfg.Stdout, habit.DefaultPath(cfg.Home))
+	return nil
 }
 
 func runNext(cfg Config) error {

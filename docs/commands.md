@@ -2,6 +2,7 @@
 
 ## Habit lifecycle
 
+- `streakforge path` prints the active store path.
 - `streakforge add <name> [description]`
 - `streakforge list`
 - `streakforge today`

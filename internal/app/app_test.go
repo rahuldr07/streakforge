@@ -42,6 +42,19 @@ func TestDefaultConfigUsesUserHomeDirectory(t *testing.T) {
 	}
 }
 
+func TestPathPrintsStorePath(t *testing.T) {
+	home := t.TempDir()
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"path"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	want := filepath.Join(home, ".streakforge.json")
+	if strings.TrimSpace(out.String()) != want {
+		t.Fatalf("path = %q, want %q", strings.TrimSpace(out.String()), want)
+	}
+}
+
 func TestStatsPrintsLongestCompletionCount(t *testing.T) {
 	home := t.TempDir()
 	data := `{

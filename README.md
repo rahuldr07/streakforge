@@ -18,6 +18,7 @@ walk  1 day   Evening walk
 - Recovery view: use `missed` to find habits skipped yesterday and catch up quickly.
 - Lagging view: find habits that have been quiet for several days.
 - Local-first storage: keep everything in `~/.streakforge.json`, with readable JSON and no account.
+- Store discovery: use `path` to print the active data file location.
 - Durable history: archive habits without deleting completion history.
 - Useful reporting: view habit details, search habits, streaks, weekly pulse, summary stats, and CSV exports.
 - Calendar view: scan recent completion rates across all active habits.
@@ -30,6 +31,7 @@ Requires Go 1.22 or newer.
 
 ```bash
 go run ./cmd/streakforge help
+go run ./cmd/streakforge path
 go run ./cmd/streakforge add read "Read ten pages"
 go run ./cmd/streakforge list
 go run ./cmd/streakforge today
@@ -67,6 +69,7 @@ protect the habits most at risk.
 
 | Command | What it does |
 | --- | --- |
+| `path` | Print the active store path. |
 | `add <name> [description]` | Create a habit. |
 | `list` | Show active habits. |
 | `today` | Show today's done/todo status. |
