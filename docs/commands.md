@@ -15,6 +15,7 @@
 - `streakforge show <habit-id>` prints one habit's details, status, streak, and recent completions.
 - `streakforge search <query>` finds active habits by name or description.
 - `streakforge archive <habit-id>`
+- `streakforge unarchive <habit-id>` restores an archived habit.
 - `streakforge rename <habit-id> <name> [description]`
 
 ## Reporting

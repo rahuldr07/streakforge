@@ -393,6 +393,30 @@ func TestRepairCleansStore(t *testing.T) {
 	}
 }
 
+func TestUnarchiveRestoresHabit(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read", "archived": true}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"unarchive", "read"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `unarchived "Read"`) {
+		t.Fatalf("unexpected unarchive output: %s", out.String())
+	}
+	updated, err := os.ReadFile(filepath.Join(home, ".streakforge.json"))
+	if err != nil {
+		t.Fatalf("read store: %v", err)
+	}
+	if strings.Contains(string(updated), `"archived": true`) {
+		t.Fatalf("store still marks habit archived: %s", string(updated))
+	}
+}
+
 func TestExportJSONPrintsStore(t *testing.T) {
 	home := t.TempDir()
 	data := `{"habits": [{"id": "read", "name": "Read"}]}`

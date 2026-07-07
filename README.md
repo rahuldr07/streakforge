@@ -90,6 +90,7 @@ protect the habits most at risk.
 | `doctor` | Check the local store for common data issues. |
 | `repair` | Deduplicate and sort completion history. |
 | `archive <habit-id>` | Hide a habit without deleting its history. |
+| `unarchive <habit-id>` | Restore an archived habit. |
 | `rename <habit-id> <name> [description]` | Update a habit's name or description. |
 | `backup` | Save a timestamped copy of the store. |
 | `restore <backup-path>` | Restore a backup after saving the current store. |

@@ -81,6 +81,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runRepair(cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
+	case "unarchive":
+		return runUnarchive(args[1:], cfg)
 	case "rename":
 		return runRename(args[1:], cfg)
 	case "backup":
@@ -121,6 +123,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge doctor")
 	fmt.Fprintln(w, "  streakforge repair")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
+	fmt.Fprintln(w, "  streakforge unarchive <habit-id>")
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge restore <backup-path>")
@@ -436,6 +439,26 @@ func runArchive(args []string, cfg Config) error {
 		return err
 	}
 	fmt.Fprintf(cfg.Stdout, "archived %q\n", archived.Name)
+	return nil
+}
+
+func runUnarchive(args []string, cfg Config) error {
+	if len(args) != 1 {
+		return fmt.Errorf("%w: unarchive requires a habit id", ErrUsage)
+	}
+	path := habit.DefaultPath(cfg.Home)
+	store, err := habit.Load(path)
+	if err != nil {
+		return err
+	}
+	store, restored, err := habit.Unarchive(store, args[0])
+	if err != nil {
+		return err
+	}
+	if err := habit.Save(path, store); err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "unarchived %q\n", restored.Name)
 	return nil
 }
 
