@@ -24,6 +24,7 @@
 - `streakforge calendar [days]` prints recent daily completion rates across active habits.
 - `streakforge stats [json]` prints active and archived habit counts, total completions, best current streak, and the largest completion count on a single habit.
 - `streakforge doctor` checks the local store for duplicate IDs, empty names, invalid dates, duplicate completions, and future completions.
+- `streakforge repair` deduplicates completion dates and sorts each habit's completion history.
 - `streakforge export` writes CSV with habit IDs, names, descriptions, creation timestamps, archive status, and completion counts.
 - `streakforge export json` writes the full habit store as formatted JSON.
 - `streakforge export completions` writes one CSV row per completion event.

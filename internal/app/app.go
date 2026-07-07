@@ -77,6 +77,8 @@ func RunWithConfig(args []string, cfg Config) error {
 		return runCalendar(args[1:], cfg)
 	case "doctor":
 		return runDoctor(cfg)
+	case "repair":
+		return runRepair(cfg)
 	case "archive":
 		return runArchive(args[1:], cfg)
 	case "rename":
@@ -117,6 +119,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge pulse")
 	fmt.Fprintln(w, "  streakforge calendar [days]")
 	fmt.Fprintln(w, "  streakforge doctor")
+	fmt.Fprintln(w, "  streakforge repair")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
@@ -342,6 +345,25 @@ func runDoctor(cfg Config) error {
 	for _, issue := range issues {
 		fmt.Fprintf(cfg.Stdout, "%s  %s\n", issue.Severity, issue.Message)
 	}
+	return nil
+}
+
+func runRepair(cfg Config) error {
+	path := habit.DefaultPath(cfg.Home)
+	store, err := habit.Load(path)
+	if err != nil {
+		return err
+	}
+	store, result := habit.Repair(store)
+	if !result.Changed {
+		fmt.Fprintln(cfg.Stdout, "store already clean")
+		return nil
+	}
+	if err := habit.Save(path, store); err != nil {
+		return err
+	}
+	fmt.Fprintf(cfg.Stdout, "removed duplicate completions: %d\n", result.DuplicateRemoved)
+	fmt.Fprintf(cfg.Stdout, "sorted habit histories: %d\n", result.CompletionsSorted)
 	return nil
 }
 
