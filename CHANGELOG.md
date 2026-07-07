@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add `unarchive` to restore archived habits.
+- Add `search --all` to include archived habits.
+- Add configurable `pulse [days]` windows.
+- Add `export active` for active-only CSV output.
 - Add `path` to print the active store file.
 - Add `today done` and `today todo` filters.
 - Add `list --all` to include archived habits.
