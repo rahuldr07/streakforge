@@ -47,7 +47,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "add":
 		return runAdd(args[1:], cfg)
 	case "list":
-		return runList(cfg)
+		return runList(args[1:], cfg)
 	case "today":
 		return runToday(args[1:], cfg)
 	case "next":
@@ -101,7 +101,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge help")
 	fmt.Fprintln(w, "  streakforge path")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
-	fmt.Fprintln(w, "  streakforge list")
+	fmt.Fprintln(w, "  streakforge list [--all]")
 	fmt.Fprintln(w, "  streakforge today [done|todo]")
 	fmt.Fprintln(w, "  streakforge next")
 	fmt.Fprintln(w, "  streakforge missed")
@@ -584,17 +584,42 @@ func runSearch(args []string, cfg Config) error {
 	return nil
 }
 
-func runList(cfg Config) error {
+func runList(args []string, cfg Config) error {
+	includeArchived := false
+	if len(args) > 1 {
+		return fmt.Errorf("%w: list accepts only --all", ErrUsage)
+	}
+	if len(args) == 1 {
+		if args[0] != "--all" {
+			return fmt.Errorf("%w: list accepts only --all", ErrUsage)
+		}
+		includeArchived = true
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	habits := habit.Active(store)
+	if includeArchived {
+		habits = store.Habits
+	}
 	if len(habits) == 0 {
-		fmt.Fprintln(cfg.Stdout, "no active habits")
+		if includeArchived {
+			fmt.Fprintln(cfg.Stdout, "no habits")
+		} else {
+			fmt.Fprintln(cfg.Stdout, "no active habits")
+		}
 		return nil
 	}
 	for _, h := range habits {
+		if includeArchived && h.Archived {
+			fmt.Fprintf(cfg.Stdout, "%s  archived  %s\n", h.ID, h.Name)
+			continue
+		}
+		if includeArchived {
+			fmt.Fprintf(cfg.Stdout, "%s  active    %s\n", h.ID, h.Name)
+			continue
+		}
 		fmt.Fprintf(cfg.Stdout, "%s  %s\n", h.ID, h.Name)
 	}
 	return nil

@@ -4,7 +4,7 @@
 
 - `streakforge path` prints the active store path.
 - `streakforge add <name> [description]`
-- `streakforge list`
+- `streakforge list [--all]` prints active habits, or includes archived habits with status labels.
 - `streakforge today [done|todo]` prints today's status, optionally filtered to completed or pending habits.
 - `streakforge next` prints unfinished active habits for today, prioritized by the streak each habit can preserve.
 - `streakforge missed` prints active habits that were not completed yesterday, including their last completion date.

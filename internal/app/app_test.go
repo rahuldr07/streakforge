@@ -55,6 +55,31 @@ func TestPathPrintsStorePath(t *testing.T) {
 	}
 }
 
+func TestListAllIncludesArchivedHabits(t *testing.T) {
+	home := t.TempDir()
+	data := `{
+  "habits": [
+    {"id": "read", "name": "Read"},
+    {"id": "old", "name": "Old", "archived": true}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"list", "--all"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "read  active    Read") {
+		t.Fatalf("list output missing active habit: %s", out.String())
+	}
+	if !strings.Contains(out.String(), "old  archived  Old") {
+		t.Fatalf("list output missing archived habit: %s", out.String())
+	}
+}
+
 func TestStatsPrintsLongestCompletionCount(t *testing.T) {
 	home := t.TempDir()
 	data := `{

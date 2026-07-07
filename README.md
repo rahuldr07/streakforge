@@ -71,7 +71,7 @@ protect the habits most at risk.
 | --- | --- |
 | `path` | Print the active store path. |
 | `add <name> [description]` | Create a habit. |
-| `list` | Show active habits. |
+| `list [--all]` | Show active habits, or include archived habits. |
 | `today [done|todo]` | Show today's status, optionally filtered. |
 | `next` | Show unfinished habits prioritized by streaks at risk. |
 | `missed` | Show active habits that were not completed yesterday. |
