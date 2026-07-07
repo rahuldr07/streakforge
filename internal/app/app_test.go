@@ -464,6 +464,29 @@ func TestExportCompletionsPrintsCompletionRows(t *testing.T) {
 	}
 }
 
+func TestExportActiveSkipsArchivedHabits(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [
+  {"id": "read", "name": "Read"},
+  {"id": "old", "name": "Old", "archived": true}
+]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"export", "active"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "read,Read") {
+		t.Fatalf("active export missing active habit: %s", out.String())
+	}
+	if strings.Contains(out.String(), "old,Old") {
+		t.Fatalf("active export included archived habit: %s", out.String())
+	}
+}
+
 func TestLogCompletesHabitForSpecificDate(t *testing.T) {
 	home := t.TempDir()
 	data := `{"habits": [{"id": "read", "name": "Read"}]}`

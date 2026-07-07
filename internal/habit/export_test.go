@@ -61,3 +61,20 @@ func TestWriteCompletionCSV(t *testing.T) {
 		t.Fatalf("unexpected csv row: %s", out.String())
 	}
 }
+
+func TestWriteActiveCSVSkipsArchivedHabits(t *testing.T) {
+	var out strings.Builder
+	err := WriteActiveCSV(&out, Store{Habits: []Habit{
+		{ID: "read", Name: "Read"},
+		{ID: "old", Name: "Old", Archived: true},
+	}})
+	if err != nil {
+		t.Fatalf("WriteActiveCSV returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "read,Read") {
+		t.Fatalf("active csv missing active habit: %s", out.String())
+	}
+	if strings.Contains(out.String(), "old,Old") {
+		t.Fatalf("active csv included archived habit: %s", out.String())
+	}
+}

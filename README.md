@@ -94,7 +94,7 @@ protect the habits most at risk.
 | `rename <habit-id> <name> [description]` | Update a habit's name or description. |
 | `backup` | Save a timestamped copy of the store. |
 | `restore <backup-path>` | Restore a backup after saving the current store. |
-| `export [csv|json|completions]` | Print habit data as CSV, formatted JSON, or completion-event CSV. |
+| `export [csv|active|json|completions]` | Print habit data as CSV, active-only CSV, formatted JSON, or completion-event CSV. |
 
 ## Storage
 

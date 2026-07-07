@@ -127,7 +127,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge rename <habit-id> <name> [description]")
 	fmt.Fprintln(w, "  streakforge backup")
 	fmt.Fprintln(w, "  streakforge restore <backup-path>")
-	fmt.Fprintln(w, "  streakforge export [csv|json|completions]")
+	fmt.Fprintln(w, "  streakforge export [csv|active|json|completions]")
 }
 
 func runPath(cfg Config) error {
@@ -412,7 +412,7 @@ func pulseBar(count int) string {
 func runExport(args []string, cfg Config) error {
 	format := "csv"
 	if len(args) > 1 {
-		return fmt.Errorf("%w: export accepts csv, json, or completions", ErrUsage)
+		return fmt.Errorf("%w: export accepts csv, active, json, or completions", ErrUsage)
 	}
 	if len(args) == 1 {
 		format = strings.ToLower(args[0])
@@ -424,12 +424,14 @@ func runExport(args []string, cfg Config) error {
 	switch format {
 	case "csv":
 		return habit.WriteCSV(cfg.Stdout, store)
+	case "active":
+		return habit.WriteActiveCSV(cfg.Stdout, store)
 	case "json":
 		return habit.WriteJSON(cfg.Stdout, store)
 	case "completions":
 		return habit.WriteCompletionCSV(cfg.Stdout, store)
 	default:
-		return fmt.Errorf("%w: export accepts csv, json, or completions", ErrUsage)
+		return fmt.Errorf("%w: export accepts csv, active, json, or completions", ErrUsage)
 	}
 }
 

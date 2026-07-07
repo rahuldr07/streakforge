@@ -9,11 +9,19 @@ import (
 )
 
 func WriteCSV(w io.Writer, store Store) error {
+	return writeHabitCSV(w, store.Habits)
+}
+
+func WriteActiveCSV(w io.Writer, store Store) error {
+	return writeHabitCSV(w, Active(store))
+}
+
+func writeHabitCSV(w io.Writer, habits []Habit) error {
 	writer := csv.NewWriter(w)
 	if err := writer.Write([]string{"id", "name", "description", "created_at", "archived", "completions"}); err != nil {
 		return err
 	}
-	for _, h := range store.Habits {
+	for _, h := range habits {
 		if err := writer.Write([]string{
 			h.ID,
 			h.Name,
