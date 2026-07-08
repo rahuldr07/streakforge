@@ -32,6 +32,7 @@ Requires Go 1.22 or newer.
 
 ```bash
 go run ./cmd/streakforge help
+go run ./cmd/streakforge version
 go run ./cmd/streakforge path
 go run ./cmd/streakforge add read "Read ten pages"
 go run ./cmd/streakforge list
@@ -71,23 +72,24 @@ protect the habits most at risk.
 
 | Command | What it does |
 | --- | --- |
+| `version` | Print the CLI version. |
 | `path` | Print the active store path. |
 | `add <name> [description]` | Create a habit. |
 | `list [--all]` | Show active habits, or include archived habits. |
-| `today [done|todo]` | Show today's status, optionally filtered. |
-| `next` | Show unfinished habits prioritized by streaks at risk. |
-| `missed` | Show active habits that were not completed yesterday. |
-| `lagging [days]` | Show active habits quiet for the given number of days. |
+| `today [done|todo] [json]` | Show today's status, optionally filtered. |
+| `next [json]` | Show unfinished habits prioritized by streaks at risk. |
+| `missed [json]` | Show active habits that were not completed yesterday. |
+| `lagging [days] [json]` | Show active habits quiet for the given number of days. |
 | `done <habit-id>` | Complete a habit for today. |
 | `log <habit-id> <yyyy-mm-dd>` | Complete a habit for a specific date. |
 | `undo <habit-id>` | Remove today's completion from a habit. |
-| `show <habit-id>` | Show details, status, streak, and recent completions. |
+| `show <habit-id> [json]` | Show details, status, streak, and recent completions. |
 | `search [--all] <query>` | Find habits by name or description. |
-| `streaks` | Show current streak lengths sorted strongest first. |
-| `pulse [days]` | Show recent completion counts. |
-| `calendar [days]` | Show recent daily completion rates for active habits. |
+| `streaks [json]` | Show current streak lengths sorted strongest first. |
+| `pulse [days] [json]` | Show recent completion counts. |
+| `calendar [days] [json]` | Show recent daily completion rates for active habits. |
 | `stats [json]` | Show active, archived, completion, and rate totals. |
-| `doctor` | Check the local store for common data issues. |
+| `doctor [json]` | Check the local store for common data issues. |
 | `repair` | Deduplicate and sort completion history. |
 | `archive <habit-id>` | Hide a habit without deleting its history. |
 | `unarchive <habit-id>` | Restore an archived habit. |

@@ -55,6 +55,17 @@ func TestPathPrintsStorePath(t *testing.T) {
 	}
 }
 
+func TestVersionPrintsVersion(t *testing.T) {
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"version"}, Config{Stdout: &out, Home: t.TempDir()})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if strings.TrimSpace(out.String()) != Version {
+		t.Fatalf("version = %q, want %q", strings.TrimSpace(out.String()), Version)
+	}
+}
+
 func TestListAllIncludesArchivedHabits(t *testing.T) {
 	home := t.TempDir()
 	data := `{
@@ -152,6 +163,24 @@ func TestStatsJSONPrintsSummary(t *testing.T) {
 	}
 }
 
+func TestStreaksJSONPrintsReports(t *testing.T) {
+	home := t.TempDir()
+	today := time.Now().Format(time.DateOnly)
+	data := `{"habits": [{"id": "read", "name": "Read", "completions": ["` + today + `"]}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"streaks", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"ID": "read"`) {
+		t.Fatalf("streaks json missing habit: %s", out.String())
+	}
+}
+
 func TestStreaksPrintsSortedReports(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()
@@ -219,6 +248,23 @@ func TestNextPrintsPendingHabitsByStreakPriority(t *testing.T) {
 	}
 }
 
+func TestNextJSONPrintsPendingHabits(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read"}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"next", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"ID": "read"`) {
+		t.Fatalf("next json missing habit: %s", out.String())
+	}
+}
+
 func TestTodayFiltersDoneAndTodo(t *testing.T) {
 	home := t.TempDir()
 	today := time.Now().Format(time.DateOnly)
@@ -248,6 +294,23 @@ func TestTodayFiltersDoneAndTodo(t *testing.T) {
 	}
 	if !strings.Contains(todo.String(), "todo  walk  Walk") || strings.Contains(todo.String(), "read") {
 		t.Fatalf("todo filter output = %s", todo.String())
+	}
+}
+
+func TestTodayJSONPrintsStatuses(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read"}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"today", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"Completed": false`) {
+		t.Fatalf("today json missing status: %s", out.String())
 	}
 }
 
@@ -285,6 +348,23 @@ func TestMissedPrintsHabitsSkippedYesterday(t *testing.T) {
 	}
 }
 
+func TestMissedJSONPrintsMissedHabits(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read"}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"missed", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"ID": "read"`) {
+		t.Fatalf("missed json missing habit: %s", out.String())
+	}
+}
+
 func TestLaggingPrintsQuietHabits(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()
@@ -318,6 +398,23 @@ func TestLaggingPrintsQuietHabits(t *testing.T) {
 	}
 }
 
+func TestLaggingJSONPrintsQuietHabits(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read"}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"lagging", "3", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"ID": "read"`) {
+		t.Fatalf("lagging json missing habit: %s", out.String())
+	}
+}
+
 func TestCalendarPrintsCompletionRates(t *testing.T) {
 	home := t.TempDir()
 	now := time.Now()
@@ -347,6 +444,18 @@ func TestCalendarPrintsCompletionRates(t *testing.T) {
 	}
 }
 
+func TestCalendarJSONPrintsCompletionRates(t *testing.T) {
+	home := t.TempDir()
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"calendar", "2", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"Total": 0`) {
+		t.Fatalf("calendar json missing totals: %s", out.String())
+	}
+}
+
 func TestPulseAcceptsDayCount(t *testing.T) {
 	home := t.TempDir()
 	var out bytes.Buffer
@@ -357,6 +466,18 @@ func TestPulseAcceptsDayCount(t *testing.T) {
 	lines := strings.Split(strings.TrimSpace(out.String()), "\n")
 	if len(lines) != 3 {
 		t.Fatalf("lines = %d, want 3; output=%q", len(lines), out.String())
+	}
+}
+
+func TestPulseJSONPrintsDays(t *testing.T) {
+	home := t.TempDir()
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"pulse", "2", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"Completion": 0`) {
+		t.Fatalf("pulse json missing completion count: %s", out.String())
 	}
 }
 
@@ -379,6 +500,18 @@ func TestDoctorPrintsStoreHealthIssues(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "error  duplicate habit id: read") {
 		t.Fatalf("doctor output missing duplicate id: %s", out.String())
+	}
+}
+
+func TestDoctorJSONPrintsIssues(t *testing.T) {
+	home := t.TempDir()
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"doctor", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"Severity": "warn"`) {
+		t.Fatalf("doctor json missing issue: %s", out.String())
 	}
 }
 
@@ -563,6 +696,23 @@ func TestShowPrintsHabitDetails(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "recent: 2026-05-18, 2026-05-17") {
 		t.Fatalf("show output missing recent completions: %s", out.String())
+	}
+}
+
+func TestShowJSONPrintsHabit(t *testing.T) {
+	home := t.TempDir()
+	data := `{"habits": [{"id": "read", "name": "Read"}]}`
+	if err := os.WriteFile(filepath.Join(home, ".streakforge.json"), []byte(data), 0o600); err != nil {
+		t.Fatalf("write store: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := RunWithConfig([]string{"show", "read", "json"}, Config{Stdout: &out, Home: home})
+	if err != nil {
+		t.Fatalf("RunWithConfig returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), `"id": "read"`) {
+		t.Fatalf("show json missing habit: %s", out.String())
 	}
 }
 

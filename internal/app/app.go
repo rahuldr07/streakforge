@@ -43,6 +43,8 @@ func RunWithConfig(args []string, cfg Config) error {
 	}
 
 	switch args[0] {
+	case "version":
+		return runVersion(cfg)
 	case "path":
 		return runPath(cfg)
 	case "add":
@@ -52,9 +54,9 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "today":
 		return runToday(args[1:], cfg)
 	case "next":
-		return runNext(cfg)
+		return runNext(args[1:], cfg)
 	case "missed":
-		return runMissed(cfg)
+		return runMissed(args[1:], cfg)
 	case "lagging":
 		return runLagging(args[1:], cfg)
 	case "done":
@@ -68,7 +70,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "search":
 		return runSearch(args[1:], cfg)
 	case "streaks":
-		return runStreaks(cfg)
+		return runStreaks(args[1:], cfg)
 	case "stats":
 		return runStats(args[1:], cfg)
 	case "pulse":
@@ -76,7 +78,7 @@ func RunWithConfig(args []string, cfg Config) error {
 	case "calendar":
 		return runCalendar(args[1:], cfg)
 	case "doctor":
-		return runDoctor(cfg)
+		return runDoctor(args[1:], cfg)
 	case "repair":
 		return runRepair(cfg)
 	case "archive":
@@ -104,23 +106,24 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  streakforge help")
+	fmt.Fprintln(w, "  streakforge version")
 	fmt.Fprintln(w, "  streakforge path")
 	fmt.Fprintln(w, "  streakforge add <name> [description]")
 	fmt.Fprintln(w, "  streakforge list [--all]")
-	fmt.Fprintln(w, "  streakforge today [done|todo]")
-	fmt.Fprintln(w, "  streakforge next")
-	fmt.Fprintln(w, "  streakforge missed")
-	fmt.Fprintln(w, "  streakforge lagging [days]")
+	fmt.Fprintln(w, "  streakforge today [done|todo] [json]")
+	fmt.Fprintln(w, "  streakforge next [json]")
+	fmt.Fprintln(w, "  streakforge missed [json]")
+	fmt.Fprintln(w, "  streakforge lagging [days] [json]")
 	fmt.Fprintln(w, "  streakforge done <habit-id>")
 	fmt.Fprintln(w, "  streakforge log <habit-id> <yyyy-mm-dd>")
 	fmt.Fprintln(w, "  streakforge undo <habit-id>")
-	fmt.Fprintln(w, "  streakforge show <habit-id>")
+	fmt.Fprintln(w, "  streakforge show <habit-id> [json]")
 	fmt.Fprintln(w, "  streakforge search [--all] <query>")
-	fmt.Fprintln(w, "  streakforge streaks")
+	fmt.Fprintln(w, "  streakforge streaks [json]")
 	fmt.Fprintln(w, "  streakforge stats [json]")
-	fmt.Fprintln(w, "  streakforge pulse [days]")
-	fmt.Fprintln(w, "  streakforge calendar [days]")
-	fmt.Fprintln(w, "  streakforge doctor")
+	fmt.Fprintln(w, "  streakforge pulse [days] [json]")
+	fmt.Fprintln(w, "  streakforge calendar [days] [json]")
+	fmt.Fprintln(w, "  streakforge doctor [json]")
 	fmt.Fprintln(w, "  streakforge repair")
 	fmt.Fprintln(w, "  streakforge archive <habit-id>")
 	fmt.Fprintln(w, "  streakforge unarchive <habit-id>")
@@ -130,17 +133,31 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  streakforge export [csv|active|json|completions]")
 }
 
+var Version = "dev"
+
+func runVersion(cfg Config) error {
+	fmt.Fprintln(cfg.Stdout, Version)
+	return nil
+}
+
 func runPath(cfg Config) error {
 	fmt.Fprintln(cfg.Stdout, habit.DefaultPath(cfg.Home))
 	return nil
 }
 
-func runNext(cfg Config) error {
+func runNext(args []string, cfg Config) error {
+	formatJSON, err := parseOptionalJSON(args)
+	if err != nil {
+		return fmt.Errorf("%w: next accepts json", ErrUsage)
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	actions := habit.Next(store, time.Now())
+	if formatJSON {
+		return writeJSON(cfg.Stdout, actions)
+	}
 	if len(actions) == 0 {
 		fmt.Fprintln(cfg.Stdout, "no pending habits")
 		return nil
@@ -151,12 +168,19 @@ func runNext(cfg Config) error {
 	return nil
 }
 
-func runMissed(cfg Config) error {
+func runMissed(args []string, cfg Config) error {
+	formatJSON, err := parseOptionalJSON(args)
+	if err != nil {
+		return fmt.Errorf("%w: missed accepts json", ErrUsage)
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	missed := habit.Missed(store, time.Now())
+	if formatJSON {
+		return writeJSON(cfg.Stdout, missed)
+	}
 	if len(missed) == 0 {
 		fmt.Fprintln(cfg.Stdout, "no missed habits yesterday")
 		return nil
@@ -173,8 +197,13 @@ func runMissed(cfg Config) error {
 
 func runLagging(args []string, cfg Config) error {
 	days := 3
+	formatJSON := false
+	if len(args) > 0 && strings.ToLower(args[len(args)-1]) == "json" {
+		formatJSON = true
+		args = args[:len(args)-1]
+	}
 	if len(args) > 1 {
-		return fmt.Errorf("%w: lagging accepts an optional day count", ErrUsage)
+		return fmt.Errorf("%w: lagging accepts an optional day count and json", ErrUsage)
 	}
 	if len(args) == 1 {
 		parsed, err := strconv.Atoi(args[0])
@@ -188,6 +217,9 @@ func runLagging(args []string, cfg Config) error {
 		return err
 	}
 	lagging := habit.Lagging(store, time.Now(), days)
+	if formatJSON {
+		return writeJSON(cfg.Stdout, lagging)
+	}
 	if len(lagging) == 0 {
 		fmt.Fprintf(cfg.Stdout, "no habits quiet for %s or more\n", streakText(days))
 		return nil
@@ -227,8 +259,13 @@ func runRestore(args []string, cfg Config) error {
 
 func runToday(args []string, cfg Config) error {
 	filter := "all"
+	formatJSON := false
+	if len(args) > 0 && strings.ToLower(args[len(args)-1]) == "json" {
+		formatJSON = true
+		args = args[:len(args)-1]
+	}
 	if len(args) > 1 {
-		return fmt.Errorf("%w: today accepts done or todo", ErrUsage)
+		return fmt.Errorf("%w: today accepts done, todo, or json", ErrUsage)
 	}
 	if len(args) == 1 {
 		filter = strings.ToLower(args[0])
@@ -250,6 +287,9 @@ func runToday(args []string, cfg Config) error {
 			continue
 		}
 		filtered = append(filtered, status)
+	}
+	if formatJSON {
+		return writeJSON(cfg.Stdout, filtered)
 	}
 	if len(filtered) == 0 {
 		fmt.Fprintln(cfg.Stdout, "no active habits")
@@ -300,8 +340,13 @@ func runRename(args []string, cfg Config) error {
 
 func runPulse(args []string, cfg Config) error {
 	days := 7
+	formatJSON := false
+	if len(args) > 0 && strings.ToLower(args[len(args)-1]) == "json" {
+		formatJSON = true
+		args = args[:len(args)-1]
+	}
 	if len(args) > 1 {
-		return fmt.Errorf("%w: pulse accepts an optional day count", ErrUsage)
+		return fmt.Errorf("%w: pulse accepts an optional day count and json", ErrUsage)
 	}
 	if len(args) == 1 {
 		parsed, err := strconv.Atoi(args[0])
@@ -314,7 +359,11 @@ func runPulse(args []string, cfg Config) error {
 	if err != nil {
 		return err
 	}
-	for _, day := range habit.Pulse(store, time.Now(), days) {
+	pulse := habit.Pulse(store, time.Now(), days)
+	if formatJSON {
+		return writeJSON(cfg.Stdout, pulse)
+	}
+	for _, day := range pulse {
 		fmt.Fprintf(cfg.Stdout, "%s  %s %d\n", day.Date, pulseBar(day.Completion), day.Completion)
 	}
 	return nil
@@ -322,8 +371,13 @@ func runPulse(args []string, cfg Config) error {
 
 func runCalendar(args []string, cfg Config) error {
 	days := 14
+	formatJSON := false
+	if len(args) > 0 && strings.ToLower(args[len(args)-1]) == "json" {
+		formatJSON = true
+		args = args[:len(args)-1]
+	}
 	if len(args) > 1 {
-		return fmt.Errorf("%w: calendar accepts an optional day count", ErrUsage)
+		return fmt.Errorf("%w: calendar accepts an optional day count and json", ErrUsage)
 	}
 	if len(args) == 1 {
 		parsed, err := strconv.Atoi(args[0])
@@ -336,7 +390,11 @@ func runCalendar(args []string, cfg Config) error {
 	if err != nil {
 		return err
 	}
-	for _, day := range habit.CompletionCalendar(store, time.Now(), days) {
+	calendar := habit.CompletionCalendar(store, time.Now(), days)
+	if formatJSON {
+		return writeJSON(cfg.Stdout, calendar)
+	}
+	for _, day := range calendar {
 		percent := 0
 		if day.Total > 0 {
 			percent = int(day.Rate*100 + 0.5)
@@ -346,12 +404,19 @@ func runCalendar(args []string, cfg Config) error {
 	return nil
 }
 
-func runDoctor(cfg Config) error {
+func runDoctor(args []string, cfg Config) error {
+	formatJSON, err := parseOptionalJSON(args)
+	if err != nil {
+		return fmt.Errorf("%w: doctor accepts json", ErrUsage)
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	issues := habit.Doctor(store, time.Now())
+	if formatJSON {
+		return writeJSON(cfg.Stdout, issues)
+	}
 	if len(issues) == 0 {
 		fmt.Fprintln(cfg.Stdout, "ok  store looks healthy")
 		return nil
@@ -505,12 +570,19 @@ func runStats(args []string, cfg Config) error {
 	return nil
 }
 
-func runStreaks(cfg Config) error {
+func runStreaks(args []string, cfg Config) error {
+	formatJSON, err := parseOptionalJSON(args)
+	if err != nil {
+		return fmt.Errorf("%w: streaks accepts json", ErrUsage)
+	}
 	store, err := habit.Load(habit.DefaultPath(cfg.Home))
 	if err != nil {
 		return err
 	}
 	reports := habit.StreakReports(store, time.Now())
+	if formatJSON {
+		return writeJSON(cfg.Stdout, reports)
+	}
 	if len(reports) == 0 {
 		fmt.Fprintln(cfg.Stdout, "no active habits")
 		return nil
@@ -589,6 +661,11 @@ func runUndo(args []string, cfg Config) error {
 }
 
 func runShow(args []string, cfg Config) error {
+	formatJSON := false
+	if len(args) > 0 && strings.ToLower(args[len(args)-1]) == "json" {
+		formatJSON = true
+		args = args[:len(args)-1]
+	}
 	if len(args) != 1 {
 		return fmt.Errorf("%w: show requires a habit id", ErrUsage)
 	}
@@ -599,6 +676,9 @@ func runShow(args []string, cfg Config) error {
 	h, err := habit.Find(store, args[0])
 	if err != nil {
 		return err
+	}
+	if formatJSON {
+		return writeJSON(cfg.Stdout, h)
 	}
 	status := "active"
 	if h.Archived {
@@ -624,6 +704,22 @@ func runShow(args []string, cfg Config) error {
 		fmt.Fprintf(cfg.Stdout, "recent: %s\n", strings.Join(recent, ", "))
 	}
 	return nil
+}
+
+func parseOptionalJSON(args []string) (bool, error) {
+	if len(args) == 0 {
+		return false, nil
+	}
+	if len(args) == 1 && strings.ToLower(args[0]) == "json" {
+		return true, nil
+	}
+	return false, ErrUsage
+}
+
+func writeJSON(w io.Writer, value any) error {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(value)
 }
 
 func recentCompletions(completions []string, limit int) []string {

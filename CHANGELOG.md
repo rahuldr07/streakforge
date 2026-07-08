@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `version` to print the CLI build version.
+- Add JSON output for `today`, `next`, `missed`, `lagging`, `show`, `streaks`, `pulse`, `calendar`, and `doctor`.
 - Add `unarchive` to restore archived habits.
 - Add `search --all` to include archived habits.
 - Add configurable `pulse [days]` windows.
